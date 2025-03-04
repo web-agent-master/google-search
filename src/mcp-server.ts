@@ -22,11 +22,21 @@ const server = new McpServer({
 // 注册Google搜索工具
 server.tool(
   "google-search",
-  "执行Google搜索并返回结果",
+  "使用Google搜索引擎查询实时网络信息，返回包含标题、链接和摘要的搜索结果。适用于需要获取最新信息、查找特定主题资料、研究当前事件或验证事实的场景。结果以JSON格式返回，包含查询内容和匹配结果列表。",
   {
-    query: z.string().describe("搜索关键词"),
-    limit: z.number().optional().describe("结果数量限制 (默认: 10)"),
-    timeout: z.number().optional().describe("超时时间(毫秒) (默认: 30000)"),
+    query: z
+      .string()
+      .describe(
+        "搜索查询字符串。为获得最佳结果：1)使用具体关键词而非模糊短语；2)可使用引号\"精确短语\"强制匹配；3)使用site:域名限定特定网站；4)使用-排除词过滤结果；5)使用OR连接备选词；6)优先使用专业术语；7)控制在2-5个关键词以获得平衡结果。例如:'气候变化 研究报告 2024 site:gov -观点' 或 '\"机器学习算法\" 教程 (Python OR Julia)'"
+      ),
+    limit: z
+      .number()
+      .optional()
+      .describe("返回的搜索结果数量 (默认: 10，建议范围: 1-20)"),
+    timeout: z
+      .number()
+      .optional()
+      .describe("搜索操作的超时时间(毫秒) (默认: 30000，可根据网络状况调整)"),
   },
   async (params) => {
     try {
@@ -53,11 +63,15 @@ server.tool(
       }
 
       // 使用全局浏览器实例执行搜索
-      const results = await googleSearch(query, {
-        limit: limit,
-        timeout: timeout,
-        stateFile: stateFilePath,
-      }, globalBrowser);
+      const results = await googleSearch(
+        query,
+        {
+          limit: limit,
+          timeout: timeout,
+          stateFile: stateFilePath,
+        },
+        globalBrowser
+      );
 
       // 构建返回结果，包含警告信息
       let responseText = JSON.stringify(results, null, 2);
@@ -137,17 +151,17 @@ async function main() {
     logger.info("Google搜索MCP服务器已启动，等待连接...");
 
     // 设置进程退出时的清理函数
-    process.on('exit', async () => {
+    process.on("exit", async () => {
       await cleanupBrowser();
     });
 
-    process.on('SIGINT', async () => {
+    process.on("SIGINT", async () => {
       logger.info("收到SIGINT信号，正在关闭服务器...");
       await cleanupBrowser();
       process.exit(0);
     });
 
-    process.on('SIGTERM', async () => {
+    process.on("SIGTERM", async () => {
       logger.info("收到SIGTERM信号，正在关闭服务器...");
       await cleanupBrowser();
       process.exit(0);
