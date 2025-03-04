@@ -14,12 +14,42 @@ export async function googleSearch(
   // 设置默认选项
   const { limit = 10, timeout = 60000, headless = true } = options;
 
+  console.log("======================================");
   console.log("正在初始化浏览器...");
+  console.log(`命令行选项: ${JSON.stringify(options)}`);
+  
+  // 如果设置了远程调试端口，则显示日志
+  if (options.remoteDebuggingPort) {
+    console.log(`启用远程调试端口: ${options.remoteDebuggingPort}`);
+  }
+  
+  // 准备浏览器启动参数
+  const launchArgs = options.remoteDebuggingPort
+    ? [`--remote-debugging-port=${options.remoteDebuggingPort}`]
+    : undefined;
+    
+  if (launchArgs) {
+    console.log(`浏览器启动参数: ${JSON.stringify(launchArgs)}`);
+  }
+  
+  console.log("准备启动浏览器...");
+  
   // 初始化浏览器
   const browser = await chromium.launch({
     headless,
     timeout: timeout * 2, // 增加浏览器启动超时时间
+    args: launchArgs,
   });
+  
+  console.log("浏览器已成功启动!");
+  
+  // 浏览器启动后显示连接信息
+  if (options.remoteDebuggingPort) {
+    console.log(`远程调试地址: http://localhost:${options.remoteDebuggingPort}`);
+    console.log(`可以使用Chrome浏览器访问上述地址进行调试`);
+  }
+  
+  console.log("======================================");
   const context = await browser.newContext({
     userAgent:
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",

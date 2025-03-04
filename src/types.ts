@@ -22,4 +22,5 @@ export interface CommandOptions {
   limit?: number;
   timeout?: number;
   headless?: boolean;
+  remoteDebuggingPort?: number;
 }

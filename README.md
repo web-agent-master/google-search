@@ -55,6 +55,7 @@ pnpm debug "搜索关键词"
 - `-l, --limit <number>`: 结果数量限制（默认：10）
 - `-t, --timeout <number>`: 超时时间（毫秒，默认：60000）
 - `--no-headless`: 显示浏览器界面（调试用）
+- `--remote-debugging-port <number>`: 启用远程调试端口（默认：9222）
 - `-V, --version`: 显示版本号
 - `-h, --help`: 显示帮助信息
 
