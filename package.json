@@ -2,6 +2,7 @@
   "name": "google-search-cli",
   "version": "1.0.0",
   "description": "基于 Playwright 的 Google 搜索 CLI 工具",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -17,7 +18,9 @@
     "debug": "ts-node src/index.ts --no-headless \"playwright typescript\"",
     "debug:build": "npm run build && node dist/index.js --no-headless \"playwright typescript\"",
     "link": "npm link",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "mcp": "ts-node src/mcp-server.ts",
+    "mcp:build": "npm run build && node dist/src/mcp-server.js"
   },
   "keywords": [
     "google",
@@ -34,8 +37,10 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
     "commander": "^13.1.0",
-    "playwright": "^1.50.1"
+    "playwright": "^1.50.1",
+    "zod": "^3.22.4"
   },
   "engines": {
     "node": ">=16.0.0"
