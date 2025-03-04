@@ -34,11 +34,12 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
 # Install from source
 git clone https://github.com/web-agent-master/google-search.git
 cd google-search
+# Install dependencies
 pnpm install
 # Compile TypeScript code
 pnpm build
-# Link package globally (optional)
-pnpm run link
+# Link package globally (required for MCP functionality)
+pnpm link
 ```
 
 ## Usage
@@ -117,8 +118,8 @@ pnpm build
 {
   "mcpServers": {
     "google-search": {
-      "command": "node",
-      "args": ["/absolute/path/to/google-search/dist/src/mcp-server.js"]
+      "command": "npx",
+      "args": ["google-search-mcp"]
     }
   }
 }

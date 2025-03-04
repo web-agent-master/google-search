@@ -29,14 +29,15 @@
 ## 安装
 
 ```bash
-# 或者从源码安装
+# 从源码安装
 git clone https://github.com/web-agent-master/google-search.git
 cd google-search
+# 安装依赖
 pnpm install
 # 编译 TypeScript 代码
 pnpm build
-# 将包链接到全局（可选）
-pnpm run link
+# 将包链接到全局（使用MCP功能必需）
+pnpm link
 ```
 
 ## 使用方法
@@ -116,8 +117,8 @@ pnpm build
 {
   "mcpServers": {
     "google-search": {
-      "command": "node",
-      "args": ["/绝对路径/到/google-search/dist/src/mcp-server.js"]
+      "command": "npx",
+      "args": ["google-search-mcp"]
     }
   }
 }
