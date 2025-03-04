@@ -1,78 +1,79 @@
-# Google 搜索工具
+# Google Search Tool
 
-这是一个基于 Playwright 的 Node.js 工具，能够绕过搜索引擎的反爬虫机制，执行 Google 搜索并提取结果。它可作为命令行工具直接使用，或通过 Model Context Protocol (MCP) 服务器为 Claude 等 AI 助手提供实时搜索能力。
+A Playwright-based Node.js tool that bypasses search engine anti-scraping mechanisms to execute Google searches and extract results. It can be used directly as a command-line tool or as a Model Context Protocol (MCP) server to provide real-time search capabilities to AI assistants like Claude.
 
-## 核心亮点
+[中文文档](README.zh-CN.md)
 
-- **本地化 SERP API 替代方案**：无需依赖付费的搜索引擎结果 API 服务，完全在本地执行搜索操作
-- **先进的反机器人检测绕过技术**：
-  - 智能浏览器指纹管理，模拟真实用户行为
-  - 自动保存和恢复浏览器状态，减少验证频率
-  - 无头/有头模式智能切换，遇到验证时自动转为有头模式让用户完成验证
-  - 多种设备和区域设置随机化，降低被检测风险
-- **MCP 服务器集成**：为 Claude 等 AI 助手提供实时搜索能力，无需额外 API 密钥
-- **完全开源免费**：所有代码开源，无使用限制，可自由定制和扩展
+## Key Features
 
-## 技术特性
+- **Local SERP API Alternative**: No need to rely on paid search engine results API services, all searches are executed locally
+- **Advanced Anti-Bot Detection Bypass Techniques**:
+  - Intelligent browser fingerprint management that simulates real user behavior
+  - Automatic saving and restoration of browser state to reduce verification frequency
+  - Smart headless/headed mode switching, automatically switching to headed mode when verification is needed
+  - Randomization of device and locale settings to reduce detection risk
+- **MCP Server Integration**: Provides real-time search capabilities to AI assistants like Claude without requiring additional API keys
+- **Completely Open Source and Free**: All code is open source with no usage restrictions, freely customizable and extensible
 
-- 使用 TypeScript 开发，提供类型安全和更好的开发体验
-- 基于 Playwright 实现浏览器自动化，支持多种浏览器引擎
-- 支持命令行参数输入搜索关键词
-- 支持作为 MCP 服务器，为 Claude 等 AI 助手提供搜索能力
-- 返回搜索结果的标题、链接和摘要
-- 以 JSON 格式输出结果
-- 支持无头模式和有头模式（调试用）
-- 提供详细的日志输出
-- 健壮的错误处理机制
-- 支持保存和恢复浏览器状态，有效避免反机器人检测
+## Technical Features
 
-## 安装
+- Developed with TypeScript, providing type safety and better development experience
+- Browser automation based on Playwright, supporting multiple browser engines
+- Command-line parameter support for search keywords
+- MCP server support for AI assistant integration
+- Returns search results with title, link, and snippet
+- JSON format output
+- Support for both headless and headed modes (for debugging)
+- Detailed logging output
+- Robust error handling
+- Browser state saving and restoration to effectively avoid anti-bot detection
+
+## Installation
 
 ```bash
-# 或者从源码安装
+# Install from source
 git clone https://github.com/web-agent-master/google-search.git
 cd google-search
 pnpm install
-# 编译 TypeScript 代码
+# Compile TypeScript code
 pnpm build
-# 将包链接到全局（可选）
+# Link package globally (optional)
 pnpm run link
 ```
 
-## 使用方法
+## Usage
 
-### 命令行工具
+### Command Line Tool
 
 ```bash
-# 直接使用命令行
-google-search "搜索关键词"
+# Direct command line usage
+google-search "search keywords"
 
-# 使用命令行选项
-google-search --limit 5 --timeout 60000 --no-headless "搜索关键词"
+# Using command line options
+google-search --limit 5 --timeout 60000 --no-headless "search keywords"
 
+# Or using npx
+npx google-search-cli "search keywords"
 
-# 或者使用 npx
-npx google-search-cli "搜索关键词"
+# Run in development mode
+pnpm dev "search keywords"
 
-# 开发模式运行
-pnpm dev "搜索关键词"
-
-# 调试模式运行（显示浏览器界面）
-pnpm debug "搜索关键词"
+# Run in debug mode (showing browser interface)
+pnpm debug "search keywords"
 ```
 
-#### 命令行选项
+#### Command Line Options
 
-- `-l, --limit <number>`: 结果数量限制（默认：10）
-- `-t, --timeout <number>`: 超时时间（毫秒，默认：60000）
-- `--no-headless`: 显示浏览器界面（调试用）
-- `--remote-debugging-port <number>`: 启用远程调试端口（默认：9222）
-- `--state-file <path>`: 浏览器状态文件路径（默认：./browser-state.json）
-- `--no-save-state`: 不保存浏览器状态
-- `-V, --version`: 显示版本号
-- `-h, --help`: 显示帮助信息
+- `-l, --limit <number>`: Result count limit (default: 10)
+- `-t, --timeout <number>`: Timeout in milliseconds (default: 60000)
+- `--no-headless`: Show browser interface (for debugging)
+- `--remote-debugging-port <number>`: Enable remote debugging port (default: 9222)
+- `--state-file <path>`: Browser state file path (default: ./browser-state.json)
+- `--no-save-state`: Don't save browser state
+- `-V, --version`: Display version number
+- `-h, --help`: Display help information
 
-#### 输出示例
+#### Output Example
 
 ```json
 {
@@ -93,148 +94,148 @@ pnpm debug "搜索关键词"
       "link": "https://github.com/deepseek-ai/DeepSeek-V3",
       "snippet": "We present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token."
     }
-    // 更多结果...
+    // More results...
   ]
 }
 ```
 
-### MCP 服务器
+### MCP Server
 
-本项目提供 Model Context Protocol (MCP) 服务器功能，让 Claude 等 AI 助手直接使用 Google 搜索能力。MCP 是一个开放协议，使 AI 助手能安全访问外部工具和数据。
+This project provides Model Context Protocol (MCP) server functionality, allowing AI assistants like Claude to directly use Google search capabilities. MCP is an open protocol that enables AI assistants to safely access external tools and data.
 
 ```bash
-# 构建项目
+# Build the project
 pnpm build
 ```
 
-#### 与 Claude Desktop 集成
+#### Integration with Claude Desktop
 
-1. 编辑 Claude Desktop 配置文件（Mac: `~/Library/Application Support/Claude/claude_desktop_config.json` 或 Windows: `%APPDATA%\Claude\claude_desktop_config.json`）
-2. 添加服务器配置并重启 Claude
+1. Edit the Claude Desktop configuration file (Mac: `~/Library/Application Support/Claude/claude_desktop_config.json` or Windows: `%APPDATA%\Claude\claude_desktop_config.json`)
+2. Add server configuration and restart Claude
 
 ```json
 {
   "mcpServers": {
     "google-search": {
       "command": "node",
-      "args": ["/绝对路径/到/google-search/dist/src/mcp-server.js"]
+      "args": ["/absolute/path/to/google-search/dist/src/mcp-server.js"]
     }
   }
 }
 ```
 
-集成后，可在 Claude 中直接使用搜索功能，如"搜索最新的 AI 研究"。
+After integration, you can directly use search functionality in Claude, such as "search for the latest AI research".
 
-## 项目结构
+## Project Structure
 
 ```
 google-search/
-├── package.json          # 项目配置和依赖
-├── tsconfig.json         # TypeScript 配置
+├── package.json          # Project configuration and dependencies
+├── tsconfig.json         # TypeScript configuration
 ├── src/
-│   ├── index.ts          # 入口文件（命令行解析和主逻辑）
-│   ├── search.ts         # 搜索功能实现（Playwright 浏览器自动化）
-│   ├── mcp-server.ts     # MCP 服务器实现
-│   └── types.ts          # 类型定义（接口和类型声明）
-├── dist/                 # 编译后的 JavaScript 文件
-├── bin/                  # 可执行文件
-│   └── google-search     # 命令行入口脚本
-├── README.md             # 项目说明文档
-└── .gitignore            # Git 忽略文件
+│   ├── index.ts          # Entry file (command line parsing and main logic)
+│   ├── search.ts         # Search functionality implementation (Playwright browser automation)
+│   ├── mcp-server.ts     # MCP server implementation
+│   └── types.ts          # Type definitions (interfaces and type declarations)
+├── dist/                 # Compiled JavaScript files
+├── bin/                  # Executable files
+│   └── google-search     # Command line entry script
+├── README.md             # Project documentation
+└── .gitignore            # Git ignore file
 ```
 
-## 技术栈
+## Technology Stack
 
-- **TypeScript**: 开发语言，提供类型安全和更好的开发体验
-- **Node.js**: 运行环境，用于执行 JavaScript/TypeScript 代码
-- **Playwright**: 用于浏览器自动化，支持多种浏览器
-- **Commander**: 用于解析命令行参数和生成帮助信息
-- **Model Context Protocol (MCP)**: 用于与 AI 助手集成的开放协议
-- **MCP SDK**: 用于实现 MCP 服务器的开发工具包
-- **Zod**: 用于验证和类型安全的 Schema 定义库
-- **pnpm**: 高效的包管理工具，节省磁盘空间和安装时间
+- **TypeScript**: Development language, providing type safety and better development experience
+- **Node.js**: Runtime environment for executing JavaScript/TypeScript code
+- **Playwright**: For browser automation, supporting multiple browsers
+- **Commander**: For parsing command line arguments and generating help information
+- **Model Context Protocol (MCP)**: Open protocol for AI assistant integration
+- **MCP SDK**: Development toolkit for implementing MCP servers
+- **Zod**: Schema definition library for validation and type safety
+- **pnpm**: Efficient package management tool, saving disk space and installation time
 
-## 开发指南
+## Development Guide
 
-所有命令都可以在项目根目录下运行：
+All commands can be run in the project root directory:
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 安装 Playwright 浏览器
+# Install Playwright browsers
 pnpm run postinstall
 
-# 编译 TypeScript 代码
+# Compile TypeScript code
 pnpm build
 
-# 清理编译输出
+# Clean compiled output
 pnpm clean
 ```
 
-### CLI 开发
+### CLI Development
 
 ```bash
-# 开发模式运行
-pnpm dev "搜索关键词"
+# Run in development mode
+pnpm dev "search keywords"
 
-# 调试模式运行（显示浏览器界面）
-pnpm debug "搜索关键词"
+# Run in debug mode (showing browser interface)
+pnpm debug "search keywords"
 
-# 运行编译后的代码
-pnpm start "搜索关键词"
+# Run compiled code
+pnpm start "search keywords"
 
-# 测试搜索功能
+# Test search functionality
 pnpm test
 ```
 
-### MCP 服务器开发
+### MCP Server Development
 
 ```bash
-# 开发模式运行 MCP 服务器
+# Run MCP server in development mode
 pnpm mcp
 
-# 运行编译后的 MCP 服务器
+# Run compiled MCP server
 pnpm mcp:build
 ```
 
-## 错误处理
+## Error Handling
 
-工具内置了健壮的错误处理机制：
+The tool has built-in robust error handling mechanisms:
 
-- 浏览器启动失败时提供友好的错误信息
-- 网络连接问题时自动返回错误状态
-- 搜索结果解析失败时提供详细日志
-- 超时情况下优雅退出并返回有用信息
+- Friendly error messages when browser startup fails
+- Automatic error status return for network connection issues
+- Detailed logs for search result parsing failures
+- Graceful exit and useful information return in timeout situations
 
-## 注意事项
+## Notes
 
-### 通用注意事项
+### General Notes
 
-- 本工具仅用于学习和研究目的
-- 请遵守 Google 的使用条款和政策
-- 不要过于频繁地发送请求，以避免被 Google 封锁
-- 某些地区可能需要使用代理才能访问 Google
-- Playwright 需要安装浏览器，首次使用时会自动下载
+- This tool is for learning and research purposes only
+- Please comply with Google's terms of service and policies
+- Do not send requests too frequently to avoid being blocked by Google
+- Some regions may require a proxy to access Google
+- Playwright needs to install browsers, which will be automatically downloaded on first use
 
-### 状态文件
+### State Files
 
-- 状态文件包含浏览器 cookies 和存储数据，请妥善保管
-- 使用状态文件可以有效避免 Google 的反机器人检测，提高搜索成功率
+- State files contain browser cookies and storage data, please keep them secure
+- Using state files can effectively avoid Google's anti-bot detection and improve search success rate
 
-### MCP 服务器
+### MCP Server
 
-- MCP 服务器需要 Node.js v16 或更高版本
-- 使用 MCP 服务器时，请确保 Claude Desktop 已更新到最新版本
-- 配置 Claude Desktop 时，请使用绝对路径指向 MCP 服务器文件
+- MCP server requires Node.js v16 or higher
+- When using the MCP server, please ensure Claude Desktop is updated to the latest version
+- When configuring Claude Desktop, use absolute paths to the MCP server file
 
-## 与商业 SERP API 的对比
+## Comparison with Commercial SERP APIs
 
-与付费的搜索引擎结果 API 服务（如 SerpAPI）相比，本项目提供了以下优势：
+Compared to paid search engine results API services (such as SerpAPI), this project offers the following advantages:
 
-- **完全免费**：无需支付 API 调用费用
-- **本地执行**：所有搜索在本地执行，无需依赖第三方服务
-- **隐私保护**：搜索查询不会被第三方记录
-- **可定制性**：完全开源，可根据需要修改和扩展功能
-- **无使用限制**：不受 API 调用次数或频率限制
-- **MCP 集成**：原生支持与 Claude 等 AI 助手集成
+- **Completely Free**: No API call fees
+- **Local Execution**: All searches are executed locally, no dependency on third-party services
+- **Privacy Protection**: Search queries are not recorded by third parties
+- **Customizability**: Fully open source, can be modified and extended as needed
+- **No Usage Limits**: Not subject to API call count or frequency limitations
+- **MCP Integration**: Native support for integration with AI assistants like Claude
