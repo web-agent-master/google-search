@@ -28,3 +28,6 @@ pnpm-debug.log*
 *.swp
 *.swo
 .DS_Store
+
+# 浏览器状态文件
+browser-state.json
