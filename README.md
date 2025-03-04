@@ -1,11 +1,22 @@
 # Google 搜索工具
 
-这是一个基于 Playwright 的 Node.js 工具，可以打开 Google 搜索页面，获取搜索结果，并以 JSON 格式返回给用户。支持命令行（CLI）和 Model Context Protocol (MCP) 服务器两种使用方式。
+这是一个基于 Playwright 的 Node.js 工具，能够绕过搜索引擎的反爬虫机制，执行 Google 搜索并提取结果。它可作为命令行工具直接使用，或通过 Model Context Protocol (MCP) 服务器为 Claude 等 AI 助手提供实时搜索能力。
 
-## 功能特点
+## 核心亮点
 
-- 使用 TypeScript 开发
-- 基于 Playwright 实现浏览器自动化
+- **本地化 SERP API 替代方案**：无需依赖付费的搜索引擎结果 API 服务，完全在本地执行搜索操作
+- **先进的反机器人检测绕过技术**：
+  - 智能浏览器指纹管理，模拟真实用户行为
+  - 自动保存和恢复浏览器状态，减少验证频率
+  - 无头/有头模式智能切换，遇到验证时自动转为有头模式让用户完成验证
+  - 多种设备和区域设置随机化，降低被检测风险
+- **MCP 服务器集成**：为 Claude 等 AI 助手提供实时搜索能力，无需额外 API 密钥
+- **完全开源免费**：所有代码开源，无使用限制，可自由定制和扩展
+
+## 技术特性
+
+- 使用 TypeScript 开发，提供类型安全和更好的开发体验
+- 基于 Playwright 实现浏览器自动化，支持多种浏览器引擎
 - 支持命令行参数输入搜索关键词
 - 支持作为 MCP 服务器，为 Claude 等 AI 助手提供搜索能力
 - 返回搜索结果的标题、链接和摘要
@@ -13,20 +24,15 @@
 - 支持无头模式和有头模式（调试用）
 - 提供详细的日志输出
 - 健壮的错误处理机制
-- 支持保存和恢复浏览器状态，避免反机器人检测
+- 支持保存和恢复浏览器状态，有效避免反机器人检测
 
 ## 安装
 
 ```bash
-# 从 npm 安装
-pnpm add google-search-cli
-
 # 或者从源码安装
-git clone <repository-url>
+git clone https://github.com/web-agent-master/google-search.git
 cd google-search
 pnpm install
-# 安装 Playwright 浏览器
-pnpm run postinstall
 # 编译 TypeScript 代码
 pnpm build
 # 将包链接到全局（可选）
@@ -44,11 +50,6 @@ google-search "搜索关键词"
 # 使用命令行选项
 google-search --limit 5 --timeout 60000 --no-headless "搜索关键词"
 
-# 使用状态文件（避免反机器人检测）
-google-search --state-file "./my-state.json" "搜索关键词"
-
-# 不保存状态
-google-search --no-save-state "搜索关键词"
 
 # 或者使用 npx
 npx google-search-cli "搜索关键词"
@@ -75,17 +76,22 @@ pnpm debug "搜索关键词"
 
 ```json
 {
-  "query": "playwright typescript",
+  "query": "deepseek",
   "results": [
     {
-      "title": "TypeScript",
-      "link": "https://playwright.dev/docs/test-typescript",
-      "snippet": "Playwright supports TypeScript out of the box. You just write tests in TypeScript, and Playwright will read them, transform to JavaScript and run. Note that ..."
+      "title": "DeepSeek",
+      "link": "https://www.deepseek.com/",
+      "snippet": "DeepSeek-R1 is now live and open source, rivaling OpenAI's Model o1. Available on web, app, and API. Click for details. Into ..."
     },
     {
-      "title": "TypeScript - Playwright",
-      "link": "https://playwright.dev/docs/test-typescript",
-      "snippet": ""
+      "title": "DeepSeek",
+      "link": "https://www.deepseek.com/",
+      "snippet": "DeepSeek-R1 is now live and open source, rivaling OpenAI's Model o1. Available on web, app, and API. Click for details. Into ..."
+    },
+    {
+      "title": "deepseek-ai/DeepSeek-V3",
+      "link": "https://github.com/deepseek-ai/DeepSeek-V3",
+      "snippet": "We present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token."
     }
     // 更多结果...
   ]
@@ -94,33 +100,17 @@ pnpm debug "搜索关键词"
 
 ### MCP 服务器
 
-除了命令行工具外，本项目还提供了 Model Context Protocol (MCP) 服务器功能，可以让 Claude 等 AI 助手直接使用 Google 搜索能力。
-
-#### 什么是 MCP？
-
-Model Context Protocol (MCP) 是一个开放协议，用于标准化应用程序如何向大型语言模型（LLM）提供上下文。通过 MCP，AI 助手可以安全地访问外部工具和数据源。
-
-#### 运行 MCP 服务器
+本项目提供 Model Context Protocol (MCP) 服务器功能，让 Claude 等 AI 助手直接使用 Google 搜索能力。MCP 是一个开放协议，使 AI 助手能安全访问外部工具和数据。
 
 ```bash
-# 开发模式运行 MCP 服务器
-pnpm mcp
-
-# 或者构建后运行
+# 构建项目
 pnpm build
-pnpm mcp:build
 ```
 
 #### 与 Claude Desktop 集成
 
-要将此 MCP 服务器与 Claude Desktop 集成，请按照以下步骤操作：
-
-1. 打开 Claude Desktop 配置文件：
-
-   - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-
-2. 添加以下配置（使用项目的绝对路径）：
+1. 编辑 Claude Desktop 配置文件（Mac: `~/Library/Application Support/Claude/claude_desktop_config.json` 或 Windows: `%APPDATA%\Claude\claude_desktop_config.json`）
+2. 添加服务器配置并重启 Claude
 
 ```json
 {
@@ -133,17 +123,7 @@ pnpm mcp:build
 }
 ```
 
-3. 重启 Claude Desktop
-
-#### 使用示例
-
-一旦集成完成，您可以在 Claude Desktop 中使用以下类型的查询：
-
-- "搜索最新的人工智能研究论文"
-- "查找关于气候变化的最新新闻"
-- "搜索 TypeScript 教程"
-
-Claude 将使用我们的 MCP 服务器执行 Google 搜索，并返回搜索结果。
+集成后，可在 Claude 中直接使用搜索功能，如"搜索最新的 AI 研究"。
 
 ## 项目结构
 
@@ -247,3 +227,14 @@ pnpm mcp:build
 - MCP 服务器需要 Node.js v16 或更高版本
 - 使用 MCP 服务器时，请确保 Claude Desktop 已更新到最新版本
 - 配置 Claude Desktop 时，请使用绝对路径指向 MCP 服务器文件
+
+## 与商业 SERP API 的对比
+
+与付费的搜索引擎结果 API 服务（如 SerpAPI）相比，本项目提供了以下优势：
+
+- **完全免费**：无需支付 API 调用费用
+- **本地执行**：所有搜索在本地执行，无需依赖第三方服务
+- **隐私保护**：搜索查询不会被第三方记录
+- **可定制性**：完全开源，可根据需要修改和扩展功能
+- **无使用限制**：不受 API 调用次数或频率限制
+- **MCP 集成**：原生支持与 Claude 等 AI 助手集成
