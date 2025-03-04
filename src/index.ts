@@ -18,18 +18,7 @@ program
   .argument("<query>", "搜索关键词")
   .option("-l, --limit <number>", "结果数量限制", parseInt, 10)
   .option("-t, --timeout <number>", "超时时间(毫秒)", parseInt, 30000)
-  .option("--no-headless", "显示浏览器界面")
-  .option(
-    "--remote-debugging-port <number>",
-    "启用远程调试端口",
-    (val) => {
-      // 确保值被正确解析为数字
-      const port = parseInt(val, 10);
-      console.log(`解析远程调试端口: ${val} -> ${port}`);
-      return port;
-    },
-    9222
-  )
+  .option("--no-headless", "已废弃: 现在总是先尝试无头模式，如果遇到人机验证会自动切换到有头模式")
   .option("--state-file <path>", "浏览器状态文件路径", "./browser-state.json")
   .option("--no-save-state", "不保存浏览器状态")
   .action(async (query: string, options: CommandOptions) => {
