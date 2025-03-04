@@ -4,10 +4,14 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { googleSearch } from "./search.js";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
+import logger from "./logger.js";
+import { chromium, Browser } from "playwright";
+
+// 全局浏览器实例
+let globalBrowser: Browser | undefined = undefined;
 
 // 创建MCP服务器实例
 const server = new McpServer({
@@ -23,74 +27,37 @@ server.tool(
     query: z.string().describe("搜索关键词"),
     limit: z.number().optional().describe("结果数量限制 (默认: 10)"),
     timeout: z.number().optional().describe("超时时间(毫秒) (默认: 30000)"),
-    headless: z.boolean().optional().describe("是否使用无头模式 (默认: true)"),
   },
   async (params) => {
     try {
-      const { query, limit, timeout, headless } = params;
-      console.log(`执行Google搜索: "${query}"`);
+      const { query, limit, timeout } = params;
+      logger.info({ query }, "执行Google搜索");
 
       // 获取用户主目录下的状态文件路径
       const stateFilePath = path.join(
         os.homedir(),
         ".google-search-browser-state.json"
       );
-      console.log(`使用状态文件路径: ${stateFilePath}`);
+      logger.info({ stateFilePath }, "使用状态文件路径");
 
       // 检查状态文件是否存在
       const stateFileExists = fs.existsSync(stateFilePath);
 
-      // 如果状态文件不存在，且用户使用的是无头模式，提醒用户
-      let userHeadlessMode = headless !== false; // 默认为true
+      // 初始化警告消息
       let warningMessage = "";
 
-      if (!stateFileExists && userHeadlessMode) {
+      if (!stateFileExists) {
         warningMessage =
-          "⚠️ 注意：浏览器状态文件不存在。首次使用时，建议使用有头模式 (headless: false) 打开浏览器，以便手动完成可能出现的人机验证。完成后，系统会保存状态文件，后续搜索将更加顺畅。";
-        console.log(warningMessage);
+          "⚠️ 注意：浏览器状态文件不存在。首次使用时，如果遇到人机验证，系统会自动切换到有头模式让您完成验证。完成后，系统会保存状态文件，后续搜索将更加顺畅。";
+        logger.warn(warningMessage);
       }
 
-      // 设置超时处理
-      let searchPromise = googleSearch(query, {
+      // 使用全局浏览器实例执行搜索
+      const results = await googleSearch(query, {
         limit: limit,
         timeout: timeout,
-        headless: headless && stateFileExists,
         stateFile: stateFilePath,
-      });
-
-      // 创建一个超时检测
-      const timeoutDuration = timeout || 30000;
-      const timeoutThreshold = Math.min(
-        timeoutDuration * 0.8,
-        timeoutDuration - 5000
-      ); // 设置为超时时间的80%或少5秒
-
-      let results;
-      try {
-        // 使用Promise.race实现超时检测
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            reject(new Error("TIMEOUT_WARNING"));
-          }, timeoutThreshold);
-        });
-
-        results = await Promise.race([searchPromise, timeoutPromise]);
-      } catch (error) {
-        // 如果是我们设置的警告超时，继续等待原始搜索，但添加警告信息
-        if (error instanceof Error && error.message === "TIMEOUT_WARNING") {
-          console.log("搜索时间较长，可能遇到了人机验证...");
-          results = await searchPromise; // 继续等待原始搜索完成
-
-          // 添加长时间等待的警告
-          if (!warningMessage) {
-            warningMessage =
-              "⚠️ 注意：搜索耗时较长，可能遇到了Google的人机验证。如果搜索结果不理想，建议使用有头模式 (headless: false) 重试，手动完成验证后将大幅提高后续搜索的成功率。";
-          }
-        } else {
-          // 其他错误，继续抛出
-          throw error;
-        }
-      }
+      }, globalBrowser);
 
       // 构建返回结果，包含警告信息
       let responseText = JSON.stringify(results, null, 2);
@@ -107,7 +74,7 @@ server.tool(
         ],
       };
     } catch (error) {
-      console.error("搜索工具执行错误:", error);
+      logger.error({ error }, "搜索工具执行错误");
 
       return {
         isError: true,
@@ -127,15 +94,82 @@ server.tool(
 // 启动服务器
 async function main() {
   try {
-    console.log("正在启动Google搜索MCP服务器...");
+    logger.info("正在启动Google搜索MCP服务器...");
+
+    // 初始化全局浏览器实例
+    logger.info("正在初始化全局浏览器实例...");
+    globalBrowser = await chromium.launch({
+      headless: true,
+      args: [
+        "--disable-blink-features=AutomationControlled",
+        "--disable-features=IsolateOrigins,site-per-process",
+        "--disable-site-isolation-trials",
+        "--disable-web-security",
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--disable-gpu",
+        "--hide-scrollbars",
+        "--mute-audio",
+        "--disable-background-networking",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-breakpad",
+        "--disable-component-extensions-with-background-pages",
+        "--disable-extensions",
+        "--disable-features=TranslateUI",
+        "--disable-ipc-flooding-protection",
+        "--disable-renderer-backgrounding",
+        "--enable-features=NetworkService,NetworkServiceInProcess",
+        "--force-color-profile=srgb",
+        "--metrics-recording-only",
+      ],
+      ignoreDefaultArgs: ["--enable-automation"],
+    });
+    logger.info("全局浏览器实例初始化成功");
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
-    console.log("Google搜索MCP服务器已启动，等待连接...");
+    logger.info("Google搜索MCP服务器已启动，等待连接...");
+
+    // 设置进程退出时的清理函数
+    process.on('exit', async () => {
+      await cleanupBrowser();
+    });
+
+    process.on('SIGINT', async () => {
+      logger.info("收到SIGINT信号，正在关闭服务器...");
+      await cleanupBrowser();
+      process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+      logger.info("收到SIGTERM信号，正在关闭服务器...");
+      await cleanupBrowser();
+      process.exit(0);
+    });
   } catch (error) {
-    console.error("服务器启动失败:", error);
+    logger.error({ error }, "服务器启动失败");
+    await cleanupBrowser();
     process.exit(1);
+  }
+}
+
+// 清理浏览器资源
+async function cleanupBrowser() {
+  if (globalBrowser) {
+    logger.info("正在关闭全局浏览器实例...");
+    try {
+      await globalBrowser.close();
+      globalBrowser = undefined;
+      logger.info("全局浏览器实例已关闭");
+    } catch (error) {
+      logger.error({ error }, "关闭浏览器实例时发生错误");
+    }
   }
 }
 
