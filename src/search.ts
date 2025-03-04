@@ -207,7 +207,7 @@ export async function googleSearch(
   async function performSearch(headless: boolean): Promise<SearchResponse> {
     let browser: Browser;
     let browserWasProvided = false;
-    
+
     if (existingBrowser) {
       browser = existingBrowser;
       browserWasProvided = true;
@@ -251,7 +251,7 @@ export async function googleSearch(
         ],
         ignoreDefaultArgs: ["--enable-automation"],
       });
-      
+
       logger.info("浏览器已成功启动!");
     }
 
@@ -418,14 +418,16 @@ export async function googleSearch(
       if (isBlockedPage) {
         if (headless) {
           logger.warn("检测到人机验证页面，将以有头模式重新启动浏览器...");
-          
+
           // 关闭当前页面和上下文
           await page.close();
           await context.close();
-          
+
           // 如果是外部提供的浏览器，不关闭它，而是创建一个新的浏览器实例
           if (browserWasProvided) {
-            logger.info("使用外部浏览器实例时遇到人机验证，创建新的浏览器实例...");
+            logger.info(
+              "使用外部浏览器实例时遇到人机验证，创建新的浏览器实例..."
+            );
             // 创建一个新的浏览器实例，不再使用外部提供的实例
             const newBrowser = await chromium.launch({
               headless: false, // 使用有头模式
@@ -460,18 +462,18 @@ export async function googleSearch(
               ],
               ignoreDefaultArgs: ["--enable-automation"],
             });
-            
+
             // 使用新的浏览器实例执行搜索
             try {
               const tempContext = await newBrowser.newContext(contextOptions);
               const tempPage = await tempContext.newPage();
-              
+
               // 这里可以添加处理人机验证的代码
               // ...
-              
+
               // 完成后关闭临时浏览器
               await newBrowser.close();
-              
+
               // 重新执行搜索
               return performSearch(false);
             } catch (error) {
@@ -552,14 +554,16 @@ export async function googleSearch(
           logger.warn(
             "搜索后检测到人机验证页面，将以有头模式重新启动浏览器..."
           );
-          
+
           // 关闭当前页面和上下文
           await page.close();
           await context.close();
-          
+
           // 如果是外部提供的浏览器，不关闭它，而是创建一个新的浏览器实例
           if (browserWasProvided) {
-            logger.info("使用外部浏览器实例时搜索后遇到人机验证，创建新的浏览器实例...");
+            logger.info(
+              "使用外部浏览器实例时搜索后遇到人机验证，创建新的浏览器实例..."
+            );
             // 创建一个新的浏览器实例，不再使用外部提供的实例
             const newBrowser = await chromium.launch({
               headless: false, // 使用有头模式
@@ -594,18 +598,18 @@ export async function googleSearch(
               ],
               ignoreDefaultArgs: ["--enable-automation"],
             });
-            
+
             // 使用新的浏览器实例执行搜索
             try {
               const tempContext = await newBrowser.newContext(contextOptions);
               const tempPage = await tempContext.newPage();
-              
+
               // 这里可以添加处理人机验证的代码
               // ...
-              
+
               // 完成后关闭临时浏览器
               await newBrowser.close();
-              
+
               // 重新执行搜索
               return performSearch(false);
             } catch (error) {
@@ -671,14 +675,16 @@ export async function googleSearch(
             logger.warn(
               "等待搜索结果时检测到人机验证页面，将以有头模式重新启动浏览器..."
             );
-            
+
             // 关闭当前页面和上下文
             await page.close();
             await context.close();
-            
+
             // 如果是外部提供的浏览器，不关闭它，而是创建一个新的浏览器实例
             if (browserWasProvided) {
-              logger.info("使用外部浏览器实例时等待搜索结果遇到人机验证，创建新的浏览器实例...");
+              logger.info(
+                "使用外部浏览器实例时等待搜索结果遇到人机验证，创建新的浏览器实例..."
+              );
               // 创建一个新的浏览器实例，不再使用外部提供的实例
               const newBrowser = await chromium.launch({
                 headless: false, // 使用有头模式
@@ -713,18 +719,18 @@ export async function googleSearch(
                 ],
                 ignoreDefaultArgs: ["--enable-automation"],
               });
-              
+
               // 使用新的浏览器实例执行搜索
               try {
                 const tempContext = await newBrowser.newContext(contextOptions);
                 const tempPage = await tempContext.newPage();
-                
+
                 // 这里可以添加处理人机验证的代码
                 // ...
-                
+
                 // 完成后关闭临时浏览器
                 await newBrowser.close();
-                
+
                 // 重新执行搜索
                 return performSearch(false);
               } catch (error) {
