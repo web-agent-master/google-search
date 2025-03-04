@@ -31,3 +31,5 @@ pnpm-debug.log*
 
 # 浏览器状态文件
 browser-state.json
+browser-state-fingerprint.json
+src/mcp-server.ts
