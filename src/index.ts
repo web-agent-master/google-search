@@ -19,12 +19,19 @@ program
   .option("-l, --limit <number>", "结果数量限制", parseInt, 10)
   .option("-t, --timeout <number>", "超时时间(毫秒)", parseInt, 30000)
   .option("--no-headless", "显示浏览器界面")
-  .option("--remote-debugging-port <number>", "启用远程调试端口", (val) => {
-    // 确保值被正确解析为数字
-    const port = parseInt(val, 10);
-    console.log(`解析远程调试端口: ${val} -> ${port}`);
-    return port;
-  }, 9222)
+  .option(
+    "--remote-debugging-port <number>",
+    "启用远程调试端口",
+    (val) => {
+      // 确保值被正确解析为数字
+      const port = parseInt(val, 10);
+      console.log(`解析远程调试端口: ${val} -> ${port}`);
+      return port;
+    },
+    9222
+  )
+  .option("--state-file <path>", "浏览器状态文件路径", "./browser-state.json")
+  .option("--no-save-state", "不保存浏览器状态")
   .action(async (query: string, options: CommandOptions) => {
     try {
       // 执行搜索

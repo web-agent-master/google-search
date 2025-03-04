@@ -1,5 +1,7 @@
 import { chromium } from "playwright";
 import { SearchResponse, SearchResult, CommandOptions } from "./types";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * 执行Google搜索并返回结果
@@ -12,7 +14,13 @@ export async function googleSearch(
   options: CommandOptions = {}
 ): Promise<SearchResponse> {
   // 设置默认选项
-  const { limit = 10, timeout = 60000, headless = true } = options;
+  const {
+    limit = 10,
+    timeout = 60000,
+    headless = true,
+    stateFile = "./browser-state.json",
+    noSaveState = false
+  } = options;
 
   console.log("======================================");
   console.log("正在初始化浏览器...");
@@ -30,6 +38,17 @@ export async function googleSearch(
     
   if (launchArgs) {
     console.log(`浏览器启动参数: ${JSON.stringify(launchArgs)}`);
+  }
+  
+  // 检查是否存在状态文件
+  let storageState: string | undefined = undefined;
+  if (fs.existsSync(stateFile)) {
+    console.log(`发现浏览器状态文件: ${stateFile}`);
+    console.log("将使用保存的浏览器状态以避免反机器人检测");
+    storageState = stateFile;
+  } else {
+    console.log(`未找到浏览器状态文件: ${stateFile}`);
+    console.log("将创建新的浏览器会话");
   }
   
   console.log("准备启动浏览器...");
@@ -50,11 +69,23 @@ export async function googleSearch(
   }
   
   console.log("======================================");
-  const context = await browser.newContext({
+  
+  // 创建浏览器上下文，如果有状态文件则加载
+  const contextOptions = {
     userAgent:
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     viewport: { width: 1280, height: 720 },
-  });
+  };
+  
+  if (storageState) {
+    console.log("正在加载保存的浏览器状态...");
+  }
+  
+  const context = await browser.newContext(
+    storageState
+      ? { ...contextOptions, storageState }
+      : contextOptions
+  );
   const page = await context.newPage();
 
   try {
@@ -121,6 +152,27 @@ export async function googleSearch(
       ],
     };
   } finally {
+    try {
+      // 保存浏览器状态（除非用户指定了不保存）
+      if (!noSaveState) {
+        console.log(`正在保存浏览器状态到: ${stateFile}...`);
+        
+        // 确保目录存在
+        const stateDir = path.dirname(stateFile);
+        if (!fs.existsSync(stateDir)) {
+          fs.mkdirSync(stateDir, { recursive: true });
+        }
+        
+        // 保存状态
+        await context.storageState({ path: stateFile });
+        console.log("浏览器状态保存成功!");
+      } else {
+        console.log("根据用户设置，不保存浏览器状态");
+      }
+    } catch (error) {
+      console.error("保存浏览器状态时发生错误:", error);
+    }
+    
     // 关闭浏览器
     console.log("正在关闭浏览器...");
     await browser.close();

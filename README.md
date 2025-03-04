@@ -12,6 +12,7 @@
 - 支持无头模式和有头模式（调试用）
 - 提供详细的日志输出
 - 健壮的错误处理机制
+- 支持保存和恢复浏览器状态，避免反机器人检测
 
 ## 安装
 
@@ -40,6 +41,12 @@ google-search "搜索关键词"
 # 使用命令行选项
 google-search --limit 5 --timeout 60000 --no-headless "搜索关键词"
 
+# 使用状态文件（避免反机器人检测）
+google-search --state-file "./my-state.json" "搜索关键词"
+
+# 不保存状态
+google-search --no-save-state "搜索关键词"
+
 # 或者使用 npx
 npx google-search-cli "搜索关键词"
 
@@ -56,6 +63,8 @@ pnpm debug "搜索关键词"
 - `-t, --timeout <number>`: 超时时间（毫秒，默认：60000）
 - `--no-headless`: 显示浏览器界面（调试用）
 - `--remote-debugging-port <number>`: 启用远程调试端口（默认：9222）
+- `--state-file <path>`: 浏览器状态文件路径（默认：./browser-state.json）
+- `--no-save-state`: 不保存浏览器状态
 - `-V, --version`: 显示版本号
 - `-h, --help`: 显示帮助信息
 
@@ -149,3 +158,5 @@ pnpm clean
 - 不要过于频繁地发送请求，以避免被 Google 封锁
 - 某些地区可能需要使用代理才能访问 Google
 - Playwright 需要安装浏览器，首次使用时会自动下载
+- 状态文件包含浏览器 cookies 和存储数据，请妥善保管
+- 使用状态文件可以有效避免 Google 的反机器人检测，提高搜索成功率

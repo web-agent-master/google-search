@@ -23,4 +23,6 @@ export interface CommandOptions {
   timeout?: number;
   headless?: boolean;
   remoteDebuggingPort?: number;
+  stateFile?: string;
+  noSaveState?: boolean;
 }
