@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import { SearchResponse, SearchResult, CommandOptions } from "./types";
+import { SearchResponse, SearchResult, CommandOptions } from "./types.js";
 import * as fs from "fs";
 import * as path from "path";
 

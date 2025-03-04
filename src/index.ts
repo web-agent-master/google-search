@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import { googleSearch } from "./search";
-import { CommandOptions } from "./types";
+import { googleSearch } from "./search.js";
+import { CommandOptions } from "./types.js";
 
 // 获取包信息
-const packageJson = require("../package.json");
+import packageJson from "../package.json" with { type: "json" };
 
 // 创建命令行程序
 const program = new Command();
