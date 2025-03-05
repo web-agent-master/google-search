@@ -2,6 +2,8 @@
 
 这是一个基于 Playwright 的 Node.js 工具，能够绕过搜索引擎的反爬虫机制，执行 Google 搜索并提取结果。它可作为命令行工具直接使用，或通过 Model Context Protocol (MCP) 服务器为 Claude 等 AI 助手提供实时搜索能力。
 
+[![Star History Chart](https://api.star-history.com/svg?repos=web-agent-master/google-search&type=Date)](https://star-history.com/#web-agent-master/google-search&Date)
+
 ## 核心亮点
 
 - **本地化 SERP API 替代方案**：无需依赖付费的搜索引擎结果 API 服务，完全在本地执行搜索操作

@@ -23,14 +23,24 @@
     "mcp": "ts-node src/mcp-server.ts",
     "mcp:build": "npm run build && node dist/src/mcp-server.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-agent-master/google-search.git"
+  },
+  "homepage": "https://github.com/web-agent-master/google-search#readme",
+  "bugs": {
+    "url": "https://github.com/web-agent-master/google-search/issues"
+  },
   "keywords": [
     "google",
     "search",
     "cli",
     "playwright",
-    "automation"
+    "automation",
+    "mcp",
+    "claude"
   ],
-  "author": "",
+  "author": "web-agent-master",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.13.9",

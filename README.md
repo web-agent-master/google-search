@@ -2,6 +2,8 @@
 
 A Playwright-based Node.js tool that bypasses search engine anti-scraping mechanisms to execute Google searches and extract results. It can be used directly as a command-line tool or as a Model Context Protocol (MCP) server to provide real-time search capabilities to AI assistants like Claude.
 
+[![Star History Chart](https://api.star-history.com/svg?repos=web-agent-master/google-search&type=Date)](https://star-history.com/#web-agent-master/google-search&Date)
+
 [中文文档](README.zh-CN.md)
 
 ## Key Features
