@@ -33,10 +33,24 @@
 git clone https://github.com/web-agent-master/google-search.git
 cd google-search
 # 安装依赖
+npm install
+# 或使用 yarn
+yarn
+# 或使用 pnpm
 pnpm install
+
 # 编译 TypeScript 代码
+npm run build
+# 或使用 yarn
+yarn build
+# 或使用 pnpm
 pnpm build
+
 # 将包链接到全局（使用MCP功能必需）
+npm link
+# 或使用 yarn
+yarn link
+# 或使用 pnpm
 pnpm link
 ```
 
@@ -138,7 +152,9 @@ pnpm build
 }
 ```
 
-Windows 环境下，也可以使用以下配置（指定完整路径）：
+Windows 环境下，也可以使用以下配置方案：
+
+1. 使用cmd.exe与npx：
 
 ```json
 {
@@ -150,6 +166,21 @@ Windows 环境下，也可以使用以下配置（指定完整路径）：
   }
 }
 ```
+
+2. 使用node与完整路径（如果上述方法遇到问题，推荐使用此方法）：
+
+```json
+{
+  "mcpServers": {
+    "google-search": {
+      "command": "node",
+      "args": ["C:/你的路径/google-search/dist/mcp-server.js"]
+    }
+  }
+}
+```
+
+注意：对于第二种方法，你必须将`C:/你的路径/google-search`替换为你实际安装google-search包的完整路径。
 
 集成后，可在 Claude 中直接使用搜索功能，如"搜索最新的 AI 研究"。
 

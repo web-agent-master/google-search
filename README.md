@@ -35,10 +35,24 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
 git clone https://github.com/web-agent-master/google-search.git
 cd google-search
 # Install dependencies
+npm install
+# Or using yarn
+yarn
+# Or using pnpm
 pnpm install
+
 # Compile TypeScript code
+npm run build
+# Or using yarn
+yarn build
+# Or using pnpm
 pnpm build
+
 # Link package globally (required for MCP functionality)
+npm link
+# Or using yarn
+yarn link
+# Or using pnpm
 pnpm link
 ```
 
@@ -139,7 +153,9 @@ pnpm build
 }
 ```
 
-For Windows environments, you can also use the following configuration (specifying the full path):
+For Windows environments, you can also use the following configurations:
+
+1. Using cmd.exe with npx:
 
 ```json
 {
@@ -151,6 +167,21 @@ For Windows environments, you can also use the following configuration (specifyi
   }
 }
 ```
+
+2. Using node with full path (recommended if you encounter issues with the above method):
+
+```json
+{
+  "mcpServers": {
+    "google-search": {
+      "command": "node",
+      "args": ["C:/path/to/your/google-search/dist/mcp-server.js"]
+    }
+  }
+}
+```
+
+Note: For the second method, you must replace `C:/path/to/your/google-search` with the actual full path to where you installed the google-search package.
 
 After integration, you can directly use search functionality in Claude, such as "search for the latest AI research".
 
