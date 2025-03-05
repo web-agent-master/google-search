@@ -155,17 +155,35 @@ async function main() {
       await cleanupBrowser();
     });
 
+    // 处理Ctrl+C (Windows和Unix/Linux)
     process.on("SIGINT", async () => {
       logger.info("收到SIGINT信号，正在关闭服务器...");
       await cleanupBrowser();
       process.exit(0);
     });
 
+    // 处理进程终止 (Unix/Linux)
     process.on("SIGTERM", async () => {
       logger.info("收到SIGTERM信号，正在关闭服务器...");
       await cleanupBrowser();
       process.exit(0);
     });
+
+    // Windows特定处理
+    if (process.platform === "win32") {
+      // 处理Windows的CTRL_CLOSE_EVENT、CTRL_LOGOFF_EVENT和CTRL_SHUTDOWN_EVENT
+      const readline = await import("readline");
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      rl.on("SIGINT", async () => {
+        logger.info("Windows: 收到SIGINT信号，正在关闭服务器...");
+        await cleanupBrowser();
+        process.exit(0);
+      });
+    }
   } catch (error) {
     logger.error({ error }, "服务器启动失败");
     await cleanupBrowser();

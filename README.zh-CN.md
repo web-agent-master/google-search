@@ -40,6 +40,15 @@ pnpm build
 pnpm link
 ```
 
+### Windows 环境特别说明
+
+在 Windows 环境下，本工具已经做了特殊适配：
+
+1. 提供了 `.cmd` 文件，确保命令行工具在 Windows 命令提示符和 PowerShell 中正常工作
+2. 日志文件存储在系统临时目录，而不是 Unix/Linux 的 `/tmp` 目录
+3. 添加了 Windows 特定的进程信号处理，确保服务器能够正常关闭
+4. 使用跨平台的文件路径处理，支持 Windows 的路径分隔符
+
 ## 使用方法
 
 ### 命令行工具
@@ -110,7 +119,12 @@ pnpm build
 
 #### 与 Claude Desktop 集成
 
-1. 编辑 Claude Desktop 配置文件（Mac: `~/Library/Application Support/Claude/claude_desktop_config.json` 或 Windows: `%APPDATA%\Claude\claude_desktop_config.json`）
+1. 编辑 Claude Desktop 配置文件
+   - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+     - 通常位于 `C:\Users\用户名\AppData\Roaming\Claude\claude_desktop_config.json`
+     - 可以在 Windows 资源管理器地址栏输入 `%APPDATA%\Claude` 直接访问
+
 2. 添加服务器配置并重启 Claude
 
 ```json
@@ -119,6 +133,19 @@ pnpm build
     "google-search": {
       "command": "npx",
       "args": ["google-search-mcp"]
+    }
+  }
+}
+```
+
+Windows 环境下，也可以使用以下配置（指定完整路径）：
+
+```json
+{
+  "mcpServers": {
+    "google-search": {
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "google-search-mcp"]
     }
   }
 }
@@ -228,6 +255,14 @@ pnpm mcp:build
 - MCP 服务器需要 Node.js v16 或更高版本
 - 使用 MCP 服务器时，请确保 Claude Desktop 已更新到最新版本
 - 配置 Claude Desktop 时，请使用绝对路径指向 MCP 服务器文件
+
+### Windows 环境特别注意事项
+
+- 在 Windows 环境下，首次运行可能需要管理员权限安装 Playwright 浏览器
+- 如果遇到权限问题，可以尝试以管理员身份运行命令提示符或 PowerShell
+- Windows 防火墙可能会阻止 Playwright 浏览器的网络连接，请在提示时允许访问
+- 浏览器状态文件默认保存在用户主目录下的 `.google-search-browser-state.json`
+- 日志文件保存在系统临时目录下的 `google-search-logs` 文件夹中
 
 ## 与商业 SERP API 的对比
 

@@ -1,9 +1,10 @@
 import { pino } from "pino";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
 
-// 确保/tmp目录存在
-const logDir = "/tmp";
+// 使用系统临时目录，确保跨平台兼容性
+const logDir = path.join(os.tmpdir(), "google-search-logs");
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }

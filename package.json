@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "bin": {
     "google-search": "./bin/google-search",
-    "google-search-mcp": "dist/src/mcp-server.js"
+    "google-search-mcp": "./bin/google-search-mcp"
   },
   "scripts": {
     "build": "tsc",
@@ -19,7 +19,7 @@
     "debug": "ts-node src/index.ts --no-headless \"playwright typescript\"",
     "debug:build": "npm run build && node dist/index.js --no-headless \"playwright typescript\"",
     "link": "npm link",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"const fs = require('fs'); const path = require('path'); if (fs.existsSync('dist')) fs.rmSync('dist', { recursive: true, force: true });\"",
     "mcp": "ts-node src/mcp-server.ts",
     "mcp:build": "npm run build && node dist/src/mcp-server.js"
   },

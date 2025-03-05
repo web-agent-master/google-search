@@ -42,6 +42,15 @@ pnpm build
 pnpm link
 ```
 
+### Windows Environment Notes
+
+This tool has been specially adapted for Windows environments:
+
+1. `.cmd` files are provided to ensure command-line tools work properly in Windows Command Prompt and PowerShell
+2. Log files are stored in the system temporary directory instead of the Unix/Linux `/tmp` directory
+3. Windows-specific process signal handling has been added to ensure proper server shutdown
+4. Cross-platform file path handling is used to support Windows path separators
+
 ## Usage
 
 ### Command Line Tool
@@ -111,7 +120,12 @@ pnpm build
 
 #### Integration with Claude Desktop
 
-1. Edit the Claude Desktop configuration file (Mac: `~/Library/Application Support/Claude/claude_desktop_config.json` or Windows: `%APPDATA%\Claude\claude_desktop_config.json`)
+1. Edit the Claude Desktop configuration file:
+   - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+     - Usually located at `C:\Users\username\AppData\Roaming\Claude\claude_desktop_config.json`
+     - You can access it directly by entering `%APPDATA%\Claude` in Windows Explorer address bar
+
 2. Add server configuration and restart Claude
 
 ```json
@@ -120,6 +134,19 @@ pnpm build
     "google-search": {
       "command": "npx",
       "args": ["google-search-mcp"]
+    }
+  }
+}
+```
+
+For Windows environments, you can also use the following configuration (specifying the full path):
+
+```json
+{
+  "mcpServers": {
+    "google-search": {
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "google-search-mcp"]
     }
   }
 }
@@ -229,6 +256,14 @@ The tool has built-in robust error handling mechanisms:
 - MCP server requires Node.js v16 or higher
 - When using the MCP server, please ensure Claude Desktop is updated to the latest version
 - When configuring Claude Desktop, use absolute paths to the MCP server file
+
+### Windows-Specific Notes
+
+- In Windows environments, you may need administrator privileges to install Playwright browsers for the first time
+- If you encounter permission issues, try running Command Prompt or PowerShell as administrator
+- Windows Firewall may block Playwright browser network connections; allow access when prompted
+- Browser state files are saved by default in the user's home directory as `.google-search-browser-state.json`
+- Log files are stored in the system temporary directory under the `google-search-logs` folder
 
 ## Comparison with Commercial SERP APIs
 
