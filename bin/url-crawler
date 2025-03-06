@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+// 检查是否在开发环境中运行
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+import { existsSync } from 'fs';
+import { createRequire } from 'module';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const isDevMode = process.env.NODE_ENV === 'development' || !existsSync(resolve(__dirname, '../dist'));
+
+if (isDevMode) {
+  // 开发模式：使用ts-node运行TypeScript源文件
+  const require = createRequire(import.meta.url);
+  require('ts-node').register();
+  await import('../src/url-crawler-test.js');
+} else {
+  // 生产模式：运行编译后的JavaScript文件
+  await import('../dist/src/url-crawler-test.js');
+} 

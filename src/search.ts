@@ -1,5 +1,5 @@
-import { chromium, devices, BrowserContextOptions, Browser } from "playwright";
-import { SearchResponse, SearchResult, CommandOptions } from "./types.js";
+import { Browser, BrowserContextOptions, chromium, devices } from "playwright";
+import { CommandOptions, SearchResponse, SearchResult } from "./types.js";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -62,8 +62,9 @@ function getHostMachineConfig(userLocale?: string): FingerprintConfig {
   // Node.js 无法直接获取系统颜色方案，使用合理的默认值
   // 可以根据时间推断：晚上使用深色模式，白天使用浅色模式
   const hour = new Date().getHours();
-  const colorScheme =
-    hour >= 19 || hour < 7 ? ("dark" as const) : ("light" as const);
+  const colorScheme = hour >= 19 || hour < 7
+    ? ("dark" as const)
+    : ("light" as const);
 
   // 其他设置使用合理的默认值
   const reducedMotion = "no-preference" as const; // 大多数用户不会启用减少动画
@@ -107,7 +108,7 @@ function getHostMachineConfig(userLocale?: string): FingerprintConfig {
 export async function googleSearch(
   query: string,
   options: CommandOptions = {},
-  existingBrowser?: Browser
+  existingBrowser?: Browser,
 ): Promise<SearchResponse> {
   // 设置默认选项
   const {
@@ -133,7 +134,7 @@ export async function googleSearch(
   if (fs.existsSync(stateFile)) {
     logger.info(
       { stateFile },
-      "发现浏览器状态文件，将使用保存的浏览器状态以避免反机器人检测"
+      "发现浏览器状态文件，将使用保存的浏览器状态以避免反机器人检测",
     );
     storageState = stateFile;
 
@@ -150,7 +151,7 @@ export async function googleSearch(
   } else {
     logger.info(
       { stateFile },
-      "未找到浏览器状态文件，将创建新的浏览器会话和指纹"
+      "未找到浏览器状态文件，将创建新的浏览器会话和指纹",
     );
   }
 
@@ -215,7 +216,7 @@ export async function googleSearch(
     } else {
       logger.info(
         { headless },
-        `准备以${headless ? "无头" : "有头"}模式启动浏览器...`
+        `准备以${headless ? "无头" : "有头"}模式启动浏览器...`,
       );
 
       // 初始化浏览器，添加更多参数以避免检测
@@ -282,7 +283,7 @@ export async function googleSearch(
       if (hostConfig.deviceName !== deviceName) {
         logger.info(
           { deviceType: hostConfig.deviceName },
-          "根据宿主机器设置使用设备类型"
+          "根据宿主机器设置使用设备类型",
         );
         // 使用新的设备配置
         contextOptions = { ...devices[hostConfig.deviceName] };
@@ -306,7 +307,7 @@ export async function googleSearch(
           colorScheme: hostConfig.colorScheme,
           deviceType: hostConfig.deviceName,
         },
-        "已根据宿主机器生成新的浏览器指纹配置"
+        "已根据宿主机器生成新的浏览器指纹配置",
       );
     }
 
@@ -325,7 +326,7 @@ export async function googleSearch(
     }
 
     const context = await browser.newContext(
-      storageState ? { ...contextOptions, storageState } : contextOptions
+      storageState ? { ...contextOptions, storageState } : contextOptions,
     );
 
     // 设置额外的浏览器属性以避免检测
@@ -352,7 +353,7 @@ export async function googleSearch(
       if (typeof WebGLRenderingContext !== "undefined") {
         const getParameter = WebGLRenderingContext.prototype.getParameter;
         WebGLRenderingContext.prototype.getParameter = function (
-          parameter: number
+          parameter: number,
         ) {
           // 随机化 UNMASKED_VENDOR_WEBGL 和 UNMASKED_RENDERER_WEBGL
           if (parameter === 37445) {
@@ -412,7 +413,7 @@ export async function googleSearch(
       const isBlockedPage = sorryPatterns.some(
         (pattern) =>
           currentUrl.includes(pattern) ||
-          (response && response.url().toString().includes(pattern))
+          (response && response.url().toString().includes(pattern)),
       );
 
       if (isBlockedPage) {
@@ -426,7 +427,7 @@ export async function googleSearch(
           // 如果是外部提供的浏览器，不关闭它，而是创建一个新的浏览器实例
           if (browserWasProvided) {
             logger.info(
-              "使用外部浏览器实例时遇到人机验证，创建新的浏览器实例..."
+              "使用外部浏览器实例时遇到人机验证，创建新的浏览器实例...",
             );
             // 创建一个新的浏览器实例，不再使用外部提供的实例
             const newBrowser = await chromium.launch({
@@ -493,7 +494,7 @@ export async function googleSearch(
             url: (url) => {
               const urlStr = url.toString();
               return sorryPatterns.every(
-                (pattern) => !urlStr.includes(pattern)
+                (pattern) => !urlStr.includes(pattern),
               );
             },
           });
@@ -552,7 +553,7 @@ export async function googleSearch(
       if (isBlockedAfterSearch) {
         if (headless) {
           logger.warn(
-            "搜索后检测到人机验证页面，将以有头模式重新启动浏览器..."
+            "搜索后检测到人机验证页面，将以有头模式重新启动浏览器...",
           );
 
           // 关闭当前页面和上下文
@@ -562,7 +563,7 @@ export async function googleSearch(
           // 如果是外部提供的浏览器，不关闭它，而是创建一个新的浏览器实例
           if (browserWasProvided) {
             logger.info(
-              "使用外部浏览器实例时搜索后遇到人机验证，创建新的浏览器实例..."
+              "使用外部浏览器实例时搜索后遇到人机验证，创建新的浏览器实例...",
             );
             // 创建一个新的浏览器实例，不再使用外部提供的实例
             const newBrowser = await chromium.launch({
@@ -629,7 +630,7 @@ export async function googleSearch(
             url: (url) => {
               const urlStr = url.toString();
               return sorryPatterns.every(
-                (pattern) => !urlStr.includes(pattern)
+                (pattern) => !urlStr.includes(pattern),
               );
             },
           });
@@ -673,7 +674,7 @@ export async function googleSearch(
         if (isBlockedDuringResults) {
           if (headless) {
             logger.warn(
-              "等待搜索结果时检测到人机验证页面，将以有头模式重新启动浏览器..."
+              "等待搜索结果时检测到人机验证页面，将以有头模式重新启动浏览器...",
             );
 
             // 关闭当前页面和上下文
@@ -683,7 +684,7 @@ export async function googleSearch(
             // 如果是外部提供的浏览器，不关闭它，而是创建一个新的浏览器实例
             if (browserWasProvided) {
               logger.info(
-                "使用外部浏览器实例时等待搜索结果遇到人机验证，创建新的浏览器实例..."
+                "使用外部浏览器实例时等待搜索结果遇到人机验证，创建新的浏览器实例...",
               );
               // 创建一个新的浏览器实例，不再使用外部提供的实例
               const newBrowser = await chromium.launch({
@@ -744,7 +745,7 @@ export async function googleSearch(
             }
           } else {
             logger.warn(
-              "等待搜索结果时检测到人机验证页面，请在浏览器中完成验证..."
+              "等待搜索结果时检测到人机验证页面，请在浏览器中完成验证...",
             );
             // 等待用户完成验证并重定向回搜索页面
             await page.waitForNavigation({
@@ -752,7 +753,7 @@ export async function googleSearch(
               url: (url) => {
                 const urlStr = url.toString();
                 return sorryPatterns.every(
-                  (pattern) => !urlStr.includes(pattern)
+                  (pattern) => !urlStr.includes(pattern),
                 );
               },
             });
@@ -816,7 +817,7 @@ export async function googleSearch(
                 maxResults: number;
                 titleSelector: string;
                 snippetSelector: string;
-              }
+              },
             ) => {
               return elements
                 .slice(0, params.maxResults)
@@ -824,7 +825,7 @@ export async function googleSearch(
                   const titleElement = el.querySelector(params.titleSelector);
                   const linkElement = el.querySelector("a");
                   const snippetElement = el.querySelector(
-                    params.snippetSelector
+                    params.snippetSelector,
                   );
 
                   return {
@@ -840,14 +841,14 @@ export async function googleSearch(
                 })
                 .filter(
                   (item: { title: string; link: string; snippet: string }) =>
-                    item.title && item.link
+                    item.title && item.link,
                 ); // 过滤掉空结果
             },
             {
               maxResults: limit,
               titleSelector: selector.title,
               snippetSelector: selector.snippet,
-            }
+            },
           );
 
           if (results.length > 0) {
@@ -879,10 +880,9 @@ export async function googleSearch(
               .slice(0, maxResults)
               .map((el: Element) => {
                 const title = el.textContent || "";
-                const link =
-                  el instanceof HTMLAnchorElement
-                    ? el.href
-                    : el.getAttribute("href") || "";
+                const link = el instanceof HTMLAnchorElement
+                  ? el.href
+                  : el.getAttribute("href") || "";
                 // 尝试获取周围的文本作为摘要
                 let snippet = "";
                 let parent = el.parentElement;
@@ -898,10 +898,10 @@ export async function googleSearch(
               })
               .filter(
                 (item: { title: string; link: string; snippet: string }) =>
-                  item.title && item.link
+                  item.title && item.link,
               ); // 过滤掉空结果
           },
-          limit
+          limit,
         );
       }
 
@@ -927,7 +927,7 @@ export async function googleSearch(
             fs.writeFileSync(
               fingerprintFile,
               JSON.stringify(savedState, null, 2),
-              "utf8"
+              "utf8",
             );
             logger.info({ fingerprintFile }, "指纹配置已保存");
           } catch (fingerprintError) {
@@ -971,7 +971,7 @@ export async function googleSearch(
             fs.writeFileSync(
               fingerprintFile,
               JSON.stringify(savedState, null, 2),
-              "utf8"
+              "utf8",
             );
             logger.info({ fingerprintFile }, "指纹配置已保存");
           } catch (fingerprintError) {
@@ -1008,4 +1008,210 @@ export async function googleSearch(
 
   // 首先尝试以无头模式执行搜索
   return performSearch(useHeadless);
+}
+
+/**
+ * 执行Bing搜索
+ * @param query 搜索查询
+ * @param options 命令行选项
+ * @param existingBrowser 可选的现有浏览器实例
+ * @returns 搜索响应
+ */
+export async function bingSearch(
+  query: string,
+  options: CommandOptions = {},
+  existingBrowser?: Browser,
+): Promise<SearchResponse> {
+  const {
+    limit = 10,
+    timeout = 30000,
+    headless = true,
+    stateFile = "./browser-state.json",
+    noSaveState = false,
+    locale = "zh-CN",
+  } = options;
+
+  // 指纹状态文件路径
+  const fingerprintFile = "./browser-state-fingerprint.json";
+
+  // 加载保存的状态
+  let savedState: SavedState = {};
+  try {
+    if (fs.existsSync(fingerprintFile)) {
+      const fingerprintData = fs.readFileSync(fingerprintFile, "utf8");
+      savedState.fingerprint = JSON.parse(fingerprintData);
+    }
+  } catch (error) {
+    logger.warn(`无法加载指纹配置: ${error}`);
+  }
+
+  // 如果没有保存的指纹配置，使用宿主机器配置
+  if (!savedState.fingerprint) {
+    savedState.fingerprint = getHostMachineConfig(locale);
+    // 保存新的指纹配置
+    try {
+      fs.writeFileSync(
+        fingerprintFile,
+        JSON.stringify(savedState.fingerprint, null, 2),
+      );
+    } catch (error) {
+      logger.warn(`无法保存指纹配置: ${error}`);
+    }
+  }
+
+  // 获取设备配置
+  const getDeviceConfig = (): [string, any] => {
+    const { deviceName } = savedState.fingerprint || {};
+    const deviceType = deviceName || "Desktop Chrome";
+    const deviceConfig = devices[deviceType];
+    return [deviceType, deviceConfig];
+  };
+
+  // 随机延迟函数
+  const getRandomDelay = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  };
+
+  async function performSearch(headless: boolean): Promise<SearchResponse> {
+    const [deviceType, deviceConfig] = getDeviceConfig();
+    logger.info(`使用设备配置: ${deviceType}`);
+
+    // 浏览器上下文选项
+    const contextOptions: BrowserContextOptions = {
+      ...deviceConfig,
+      locale: savedState.fingerprint?.locale || locale,
+      timezoneId: savedState.fingerprint?.timezoneId,
+      colorScheme: savedState.fingerprint?.colorScheme,
+      reducedMotion: savedState.fingerprint?.reducedMotion,
+      forcedColors: savedState.fingerprint?.forcedColors,
+    };
+
+    // 如果存在状态文件，尝试加载
+    if (fs.existsSync(stateFile) && !noSaveState) {
+      try {
+        contextOptions.storageState = stateFile;
+      } catch (error) {
+        logger.warn(`无法加载浏览器状态: ${error}`);
+      }
+    }
+
+    // 使用现有浏览器或创建新的浏览器
+    const browser = existingBrowser || await chromium.launch({ headless });
+    const context = await browser.newContext(contextOptions);
+    const page = await context.newPage();
+
+    try {
+      // 设置超时
+      page.setDefaultTimeout(timeout);
+
+      // 访问 Bing 搜索页面
+      await page.goto("https://www.bing.com/");
+      logger.info("已加载 Bing 搜索页面");
+
+      // 等待搜索框出现
+      await page.waitForSelector("#sb_form_q", { timeout: 10000 });
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+            await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.focus("#sb_form_q");
+      await page.click("#sb_form_q");
+      
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+ 
+      //获得sb_form_q坐标并用鼠标点击
+      const sbFormQ = await page.$("#sb_form_q");
+
+      const sbFormQRect = await sbFormQ?.boundingBox();
+      if (sbFormQRect) {
+        await page.mouse.click(sbFormQRect.x + sbFormQRect.width / 2, sbFormQRect.y + sbFormQRect.height / 2);
+      }
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.fill("#sb_form_q", query); // 使用 fill 输入内容，更稳定
+
+      logger.info(`已输入查询: ${query}`);
+
+      // 提交搜索
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+      await page.keyboard.press("Control+Enter");
+      await page.waitForTimeout(getRandomDelay(1000, 3000));
+
+      // 等待搜索结果加载
+      await page.waitForSelector(".b_algo h2", { timeout: 15000 });
+
+      // 等待搜索结果加载
+      await page.waitForSelector(".b_algo h2", { timeout: 15000 });
+      logger.info("搜索结果已加载");
+
+      // 提取搜索结果
+      const results = await page.evaluate((resultLimit) => {
+        const searchResults: SearchResult[] = [];
+
+        // 选择所有搜索结果项
+        const resultElements = document.querySelectorAll("#b_results .b_algo");
+
+        // 遍历结果元素
+        for (let i = 0; i < Math.min(resultElements.length, resultLimit); i++) {
+          const element = resultElements[i];
+
+          // 提取标题和链接
+          const titleElement = element.querySelector("h2 a");
+          const title = titleElement?.textContent?.trim() || "";
+          const link = titleElement?.getAttribute("href") || "";
+
+          // 提取摘要
+          const snippetElement = element.querySelector(".b_caption p");
+          const snippet = snippetElement?.textContent?.trim() || "";
+
+          // 只添加有效的结果
+          if (title && link) {
+            searchResults.push({ title, link, snippet });
+          }
+        }
+
+        return searchResults;
+      }, limit);
+
+      // 保存浏览器状态
+      if (!noSaveState) {
+        try {
+          await context.storageState({ path: stateFile });
+          logger.info("已保存浏览器状态");
+        } catch (error) {
+          logger.warn(`无法保存浏览器状态: ${error}`);
+        }
+      }
+
+      // 关闭浏览器（如果不是外部提供的）
+      if (!existingBrowser) {
+        await browser.close();
+      }
+
+      return {
+        query,
+        results,
+      };
+    } catch (error) {
+      // 关闭浏览器（如果不是外部提供的）
+      if (!existingBrowser) {
+        await browser.close();
+      }
+      throw error;
+    }
+  }
+
+  try {
+    // 首先尝试无头模式
+    logger.info("尝试使用无头模式进行搜索");
+    return await performSearch(false);
+  } catch (error) {
+    // 如果无头模式失败，尝试有头模式
+    logger.warn(`无头模式搜索失败: ${error}`);
+    logger.info("切换到有头模式");
+    return await performSearch(false);
+  }
 }

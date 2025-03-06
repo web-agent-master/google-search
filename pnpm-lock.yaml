@@ -30,9 +30,6 @@ importers:
       '@types/node':
         specifier: ^22.13.9
         version: 22.13.9
-      '@types/pino':
-        specifier: ^7.0.5
-        version: 7.0.5
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.13.9)(typescript@5.8.2)
@@ -74,10 +71,6 @@ packages:
 
   '@types/node@22.13.9':
     resolution: {integrity: sha512-acBjXdRJ3A6Pb3tqnw9HZmyR3Fiol3aGxRCK1x3d+6CDAMjl7I649wpSd+yNURCjbOUGu9tqtLKnTGxmK6CyGw==}
-
-  '@types/pino@7.0.5':
-    resolution: {integrity: sha512-wKoab31pknvILkxAF8ss+v9iNyhw5Iu/0jLtRkUD74cNfOOLJNnqfFKAv0r7wVaTQxRZtWrMpGfShwwBjOcgcg==}
-    deprecated: This is a stub types definition. pino provides its own type definitions, so you do not need this installed.
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -625,10 +618,6 @@ snapshots:
   '@types/node@22.13.9':
     dependencies:
       undici-types: 6.20.0
-
-  '@types/pino@7.0.5':
-    dependencies:
-      pino: 9.6.0
 
   accepts@2.0.0:
     dependencies:
