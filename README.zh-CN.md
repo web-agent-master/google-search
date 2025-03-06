@@ -1,19 +1,23 @@
-# Google 搜索工具
+# 搜索工具
 
-这是一个基于 Playwright 的 Node.js 工具，能够绕过搜索引擎的反爬虫机制，执行 Google 搜索并提取结果。它可作为命令行工具直接使用，或通过 Model Context Protocol (MCP) 服务器为 Claude 等 AI 助手提供实时搜索能力。
+一个基于 Playwright 的 Node.js 工具，能够绕过搜索引擎的反爬虫机制，执行 Google 和 Bing 搜索并提取结果。它可以直接作为命令行工具使用，也可以作为 Model Context Protocol (MCP) 服务器为 Claude 等 AI 助手提供实时搜索能力。
 
 [![Star History Chart](https://api.star-history.com/svg?repos=web-agent-master/google-search&type=Date)](https://star-history.com/#web-agent-master/google-search&Date)
 
-## 核心亮点
+[English Documentation](README.md)
 
-- **本地化 SERP API 替代方案**：无需依赖付费的搜索引擎结果 API 服务，完全在本地执行搜索操作
+## 主要特点
+
+- **本地 SERP API 替代方案**：无需依赖付费的搜索引擎结果 API 服务，所有搜索在本地执行
+- **多搜索引擎支持**：目前支持 Google 和 Bing 搜索引擎
+- **URL 内容爬取器**：可提取任何网页内容，支持自定义选择器和元数据提取
 - **先进的反机器人检测绕过技术**：
   - 智能浏览器指纹管理，模拟真实用户行为
   - 自动保存和恢复浏览器状态，减少验证频率
-  - 无头/有头模式智能切换，遇到验证时自动转为有头模式让用户完成验证
-  - 多种设备和区域设置随机化，降低被检测风险
-- **MCP 服务器集成**：为 Claude 等 AI 助手提供实时搜索能力，无需额外 API 密钥
-- **完全开源免费**：所有代码开源，无使用限制，可自由定制和扩展
+  - 智能无头/有头模式切换，在需要验证时自动切换到有头模式
+  - 设备和区域设置的随机化，降低检测风险
+- **MCP 服务器集成**：为 Claude 等 AI 助手提供实时搜索能力，无需额外的 API 密钥
+- **完全开源和免费**：所有代码开源，无使用限制，可自由定制和扩展
 
 ## 技术特性
 
@@ -22,6 +26,7 @@
 - 支持命令行参数输入搜索关键词
 - 支持作为 MCP 服务器，为 Claude 等 AI 助手提供搜索能力
 - 返回搜索结果的标题、链接和摘要
+- URL 爬取器支持自定义内容提取和元数据支持
 - 以 JSON 格式输出结果
 - 支持无头模式和有头模式（调试用）
 - 提供详细的日志输出
@@ -67,36 +72,52 @@ pnpm link
 
 ## 使用方法
 
-### 命令行工具
+### 命令行
 
 ```bash
-# 直接使用命令行
-google-search "搜索关键词"
+# Google 搜索
+npx google-search "你的搜索查询"
+# 或者带选项
+npx google-search --limit 5 "你的搜索查询"
 
-# 使用命令行选项
-google-search --limit 5 --timeout 60000 --no-headless "搜索关键词"
+# Bing 搜索
+npx bing-search "你的搜索查询"
+# 或者带选项
+npx bing-search --limit 5 "你的搜索查询"
 
-
-# 或者使用 npx
-npx google-search-cli "搜索关键词"
-
-# 开发模式运行
-pnpm dev "搜索关键词"
-
-# 调试模式运行（显示浏览器界面）
-pnpm debug "搜索关键词"
+# URL 爬取器
+npx url-crawler "https://example.com"
+# 或者带选项
+npx url-crawler -s "article.main-content" -w "div.loaded-content" -t 30000 "https://example.com"
 ```
 
-#### 命令行选项
+你也可以使用子命令：
 
-- `-l, --limit <number>`: 结果数量限制（默认：10）
-- `-t, --timeout <number>`: 超时时间（毫秒，默认：60000）
-- `--no-headless`: 显示浏览器界面（调试用）
-- `--remote-debugging-port <number>`: 启用远程调试端口（默认：9222）
-- `--state-file <path>`: 浏览器状态文件路径（默认：./browser-state.json）
-- `--no-save-state`: 不保存浏览器状态
-- `-V, --version`: 显示版本号
-- `-h, --help`: 显示帮助信息
+```bash
+# Google 搜索
+npx google-search google "你的搜索查询"
+
+# Bing 搜索
+npx google-search bing "你的搜索查询"
+```
+
+### 选项
+
+#### 搜索选项
+- `--limit <number>`：限制结果数量（默认：10）
+- `--timeout <number>`：设置超时时间（毫秒）（默认：30000）
+- `--state-file <path>`：指定浏览器状态文件路径（默认：./browser-state.json）
+- `--no-save-state`：不保存浏览器状态
+- `--locale <locale>`：指定搜索结果语言（默认：zh-CN）
+
+#### URL 爬取器选项
+- `-s, --selector <selector>`：CSS选择器，用于提取特定内容
+- `-w, --wait-for <selector>`：等待指定元素出现后再提取内容
+- `-t, --timeout <ms>`：超时时间(毫秒)（默认：30000）
+- `--no-metadata`：不提取元数据
+- `--no-headless`：使用有头模式运行浏览器
+- `--no-save-state`：不保存浏览器状态
+- `--state-file <path>`：指定浏览器状态文件路径（默认：~/.url-crawler-browser-state.json）
 
 #### 输出示例
 
@@ -124,14 +145,31 @@ pnpm debug "搜索关键词"
 }
 ```
 
+#### URL 爬取器输出示例
+
+```json
+{
+  "url": "https://example.com",
+  "title": "Example Domain",
+  "content": "Example Domain\n\nThis domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\n\nMore information...",
+  "metadata": {
+    "viewport": "width=device-width, initial-scale=1"
+  },
+  "timestamp": "2025-03-06T07:44:05.698Z"
+}
+```
+
 ### MCP 服务器
 
-本项目提供 Model Context Protocol (MCP) 服务器功能，让 Claude 等 AI 助手直接使用 Google 搜索能力。MCP 是一个开放协议，使 AI 助手能安全访问外部工具和数据。
-
 ```bash
-# 构建项目
-pnpm build
+# 启动 MCP 服务器
+npx google-search-mcp
 ```
+
+MCP 服务器提供两个工具：
+- `google-search`：用于 Google 搜索
+- `bing-search`：用于 Bing 搜索
+- `url-crawler`：用于爬取和提取URL内容
 
 #### 与 Claude Desktop 集成
 

@@ -1,6 +1,6 @@
-# Google Search Tool
+# Search Tool
 
-A Playwright-based Node.js tool that bypasses search engine anti-scraping mechanisms to execute Google searches and extract results. It can be used directly as a command-line tool or as a Model Context Protocol (MCP) server to provide real-time search capabilities to AI assistants like Claude.
+A Playwright-based Node.js tool that bypasses search engine anti-scraping mechanisms to execute Google and Bing searches and extract results. It can be used directly as a command-line tool or as a Model Context Protocol (MCP) server to provide real-time search capabilities to AI assistants like Claude.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=web-agent-master/google-search&type=Date)](https://star-history.com/#web-agent-master/google-search&Date)
 
@@ -9,6 +9,8 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
 ## Key Features
 
 - **Local SERP API Alternative**: No need to rely on paid search engine results API services, all searches are executed locally
+- **Multiple Search Engines Support**: Currently supports Google and Bing search engines
+- **URL Content Crawler**: Extract content from any web page with customizable selectors and metadata extraction
 - **Advanced Anti-Bot Detection Bypass Techniques**:
   - Intelligent browser fingerprint management that simulates real user behavior
   - Automatic saving and restoration of browser state to reduce verification frequency
@@ -24,6 +26,7 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
 - Command-line parameter support for search keywords
 - MCP server support for AI assistant integration
 - Returns search results with title, link, and snippet
+- URL crawler with customizable content extraction and metadata support
 - JSON format output
 - Support for both headless and headed modes (for debugging)
 - Detailed logging output
@@ -69,35 +72,52 @@ This tool has been specially adapted for Windows environments:
 
 ## Usage
 
-### Command Line Tool
+### Command Line
 
 ```bash
-# Direct command line usage
-google-search "search keywords"
+# Google search
+npx google-search "your search query"
+# Or with options
+npx google-search --limit 5 "your search query"
 
-# Using command line options
-google-search --limit 5 --timeout 60000 --no-headless "search keywords"
+# Bing search
+npx bing-search "your search query"
+# Or with options
+npx bing-search --limit 5 "your search query"
 
-# Or using npx
-npx google-search-cli "search keywords"
-
-# Run in development mode
-pnpm dev "search keywords"
-
-# Run in debug mode (showing browser interface)
-pnpm debug "search keywords"
+# URL crawler
+npx url-crawler "https://example.com"
+# Or with options
+npx url-crawler -s "article.main-content" -w "div.loaded-content" -t 30000 "https://example.com"
 ```
 
-#### Command Line Options
+You can also use the subcommands:
 
-- `-l, --limit <number>`: Result count limit (default: 10)
-- `-t, --timeout <number>`: Timeout in milliseconds (default: 60000)
-- `--no-headless`: Show browser interface (for debugging)
-- `--remote-debugging-port <number>`: Enable remote debugging port (default: 9222)
-- `--state-file <path>`: Browser state file path (default: ./browser-state.json)
+```bash
+# Google search
+npx google-search google "your search query"
+
+# Bing search
+npx google-search bing "your search query"
+```
+
+### Options
+
+#### Search Options
+- `--limit <number>`: Limit the number of results (default: 10)
+- `--timeout <number>`: Set timeout in milliseconds (default: 30000)
+- `--state-file <path>`: Specify browser state file path (default: ./browser-state.json)
 - `--no-save-state`: Don't save browser state
-- `-V, --version`: Display version number
-- `-h, --help`: Display help information
+- `--locale <locale>`: Specify search result language (default: zh-CN)
+
+#### URL Crawler Options
+- `-s, --selector <selector>`: CSS selector to extract specific content
+- `-w, --wait-for <selector>`: Wait for specified element to appear before extracting content
+- `-t, --timeout <ms>`: Timeout in milliseconds (default: 30000)
+- `--no-metadata`: Don't extract metadata
+- `--no-headless`: Run browser in headed mode
+- `--no-save-state`: Don't save browser state
+- `--state-file <path>`: Specify browser state file path (default: ~/.url-crawler-browser-state.json)
 
 #### Output Example
 
@@ -125,14 +145,33 @@ pnpm debug "search keywords"
 }
 ```
 
+#### URL Crawler Output Example
+
+```json
+{
+  "url": "https://example.com",
+  "title": "Example Domain",
+  "content": "Example Domain\n\nThis domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\n\nMore information...",
+  "metadata": {
+    "viewport": "width=device-width, initial-scale=1"
+  },
+  "timestamp": "2025-03-06T07:44:05.698Z"
+}
+```
+
 ### MCP Server
 
 This project provides Model Context Protocol (MCP) server functionality, allowing AI assistants like Claude to directly use Google search capabilities. MCP is an open protocol that enables AI assistants to safely access external tools and data.
 
 ```bash
-# Build the project
-pnpm build
+# Start the MCP server
+npx google-search-mcp
 ```
+
+The MCP server provides three tools:
+- `google-search`: For Google search
+- `bing-search`: For Bing search
+- `url-crawler`: For crawling and extracting content from URLs
 
 #### Integration with Claude Desktop
 

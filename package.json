@@ -1,13 +1,17 @@
 {
-  "name": "google-search-cli",
+  "name": "search-cli",
   "version": "1.0.0",
-  "description": "基于 Playwright 的 Google 搜索 CLI 工具",
+  "description": "基于 Playwright 的 Google 和 Bing 搜索 CLI 工具",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "google-search": "./bin/google-search",
-    "google-search-mcp": "./bin/google-search-mcp"
+    "google-search-mcp": "./bin/google-search-mcp",
+    "bing-search": "./bin/bing-search",
+    "bing-search-mcp": "./bin/bing-search-mcp",
+    "search-mcp": "./bin/search-mcp",
+    "url-crawler": "./bin/url-crawler"
   },
   "scripts": {
     "build": "tsc",
@@ -21,7 +25,13 @@
     "link": "npm link",
     "clean": "node -e \"const fs = require('fs'); const path = require('path'); if (fs.existsSync('dist')) fs.rmSync('dist', { recursive: true, force: true });\"",
     "mcp": "ts-node src/mcp-server.ts",
-    "mcp:build": "npm run build && node dist/src/mcp-server.js"
+    "mcp:build": "npm run build && node dist/src/mcp-server.js",
+    "bing": "ts-node src/bing-index.ts",
+    "bing:build": "npm run build && node dist/src/bing-index.js",
+    "bing:test": "ts-node src/bing-index.ts \"playwright typescript\"",
+    "bing:debug": "ts-node src/bing-index.ts --no-headless \"playwright typescript\"",
+    "url-crawler": "ts-node src/url-crawler-test.ts",
+    "url-crawler:build": "npm run build && node dist/src/url-crawler-test.js"
   },
   "repository": {
     "type": "git",
@@ -57,5 +67,6 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }
