@@ -12,7 +12,8 @@
   - 自动保存和恢复浏览器状态，减少验证频率
   - 无头/有头模式智能切换，遇到验证时自动转为有头模式让用户完成验证
   - 多种设备和区域设置随机化，降低被检测风险
-- **原始HTML获取**：能够获取搜索结果页面的原始HTML，用于分析和调试Google页面结构变化时的提取策略
+- **原始HTML获取**：能够获取搜索结果页面的原始HTML（已移除CSS和JavaScript），用于分析和调试Google页面结构变化时的提取策略
+- **网页截图功能**：在保存HTML内容的同时，自动捕获并保存完整网页截图
 - **MCP 服务器集成**：为 Claude 等 AI 助手提供实时搜索能力，无需额外 API 密钥
 - **完全开源免费**：所有代码开源，无使用限制，可自由定制和扩展
 
@@ -146,7 +147,8 @@ google-search "搜索关键词" --get-html --save-html --html-output "./输出.h
 {
   "query": "playwright automation",
   "url": "https://www.google.com/",
-  "htmlLength": 1291733,
+  "originalHtmlLength": 1291733,
+  "cleanedHtmlLength": 456789,
   "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta content=\"dark light\" name=\"color-scheme\"><meta content=\"origin\" name=\"referrer\">..."
 }
 ```
@@ -157,8 +159,10 @@ google-search "搜索关键词" --get-html --save-html --html-output "./输出.h
 {
   "query": "playwright automation",
   "url": "https://www.google.com/",
-  "htmlLength": 1292241,
+  "originalHtmlLength": 1292241,
+  "cleanedHtmlLength": 458976,
   "savedPath": "./google-search-html/playwright_automation-2025-04-06T03-30-06-852Z.html",
+  "screenshotPath": "./google-search-html/playwright_automation-2025-04-06T03-30-06-852Z.png",
   "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\">..."
 }
 ```

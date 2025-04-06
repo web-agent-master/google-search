@@ -14,7 +14,8 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
   - Automatic saving and restoration of browser state to reduce verification frequency
   - Smart headless/headed mode switching, automatically switching to headed mode when verification is needed
   - Randomization of device and locale settings to reduce detection risk
-- **Raw HTML Retrieval**: Ability to fetch the raw HTML of search result pages for analysis and debugging when Google's page structure changes
+- **Raw HTML Retrieval**: Ability to fetch the raw HTML of search result pages (with CSS and JavaScript removed) for analysis and debugging when Google's page structure changes
+- **Page Screenshot**: Automatically captures and saves a full-page screenshot when saving HTML content
 - **MCP Server Integration**: Provides real-time search capabilities to AI assistants like Claude without requiring additional API keys
 - **Completely Open Source and Free**: All code is open source with no usage restrictions, freely customizable and extensible
 
@@ -147,7 +148,8 @@ When using the `--get-html` option, the output will include information about th
 {
   "query": "playwright automation",
   "url": "https://www.google.com/",
-  "htmlLength": 1291733,
+  "originalHtmlLength": 1291733,
+  "cleanedHtmlLength": 456789,
   "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta content=\"dark light\" name=\"color-scheme\"><meta content=\"origin\" name=\"referrer\">..."
 }
 ```
@@ -158,8 +160,10 @@ If you also use the `--save-html` option, the output will include the path where
 {
   "query": "playwright automation",
   "url": "https://www.google.com/",
-  "htmlLength": 1292241,
+  "originalHtmlLength": 1292241,
+  "cleanedHtmlLength": 458976,
   "savedPath": "./google-search-html/playwright_automation-2025-04-06T03-30-06-852Z.html",
+  "screenshotPath": "./google-search-html/playwright_automation-2025-04-06T03-30-06-852Z.png",
   "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\">..."
 }
 ```
@@ -216,7 +220,7 @@ For Windows environments, you can also use the following configurations:
   "mcpServers": {
     "google-search": {
       "command": "node",
-      "args": ["C:/path/to/your/google-search/dist/mcp-server.js"]
+      "args": ["C:/path/to/your/google-search/dist/src/mcp-server.js"]
     }
   }
 }

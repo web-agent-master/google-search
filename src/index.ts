@@ -44,8 +44,10 @@ program
         const outputResult = {
           query: htmlResult.query,
           url: htmlResult.url,
-          htmlLength: htmlResult.html.length,
+          originalHtmlLength: htmlResult.originalHtmlLength, // 原始HTML长度（包含CSS和JavaScript）
+          cleanedHtmlLength: htmlResult.html.length, // 清理后的HTML长度（不包含CSS和JavaScript）
           savedPath: htmlResult.savedPath,
+          screenshotPath: htmlResult.screenshotPath, // 网页截图保存路径
           // 只输出HTML的前500个字符作为预览
           htmlPreview: htmlResult.html.substring(0, 500) + (htmlResult.html.length > 500 ? '...' : '')
         };

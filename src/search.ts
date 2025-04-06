@@ -1426,11 +1426,25 @@ export async function getGoogleSearchPageHtml(
       await page.waitForLoadState("networkidle", { timeout });
       
       // 获取页面HTML内容
-      const html = await page.content();
-      logger.info({ contentLength: html.length }, "成功获取页面HTML内容");
+      const fullHtml = await page.content();
+      
+      // 移除CSS和JavaScript内容，只保留纯HTML
+      // 移除所有<style>标签及其内容
+      let html = fullHtml.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+      // 移除所有<link rel="stylesheet">标签
+      html = html.replace(/<link\s+[^>]*rel=["']stylesheet["'][^>]*>/gi, '');
+      // 移除所有<script>标签及其内容
+      html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      
+      logger.info({
+        originalLength: fullHtml.length,
+        cleanedLength: html.length
+      }, "成功获取并清理页面HTML内容");
 
-      // 如果需要，将HTML保存到文件
+      // 如果需要，将HTML保存到文件并截图
       let savedFilePath: string | undefined = undefined;
+      let screenshotPath: string | undefined = undefined;
+      
       if (saveToFile) {
         // 生成默认文件名（如果未提供）
         if (!outputPath) {
@@ -1452,10 +1466,24 @@ export async function getGoogleSearchPageHtml(
           fs.mkdirSync(fileDir, { recursive: true });
         }
 
-        // 写入文件
+        // 写入HTML文件
         fs.writeFileSync(outputPath, html, "utf8");
         savedFilePath = outputPath;
-        logger.info({ path: outputPath }, "HTML内容已保存到文件");
+        logger.info({ path: outputPath }, "清理后的HTML内容已保存到文件");
+        
+        // 保存网页截图
+        // 生成截图文件名（基于HTML文件名，但扩展名为.png）
+        const screenshotFilePath = outputPath.replace(/\.html$/, '.png');
+        
+        // 截取整个页面的截图
+        logger.info("正在截取网页截图...");
+        await page.screenshot({
+          path: screenshotFilePath,
+          fullPage: true
+        });
+        
+        screenshotPath = screenshotFilePath;
+        logger.info({ path: screenshotFilePath }, "网页截图已保存");
       }
 
       try {
@@ -1500,7 +1528,9 @@ export async function getGoogleSearchPageHtml(
         query,
         html,
         url: finalUrl,
-        savedPath: savedFilePath
+        savedPath: savedFilePath,
+        screenshotPath: screenshotPath,
+        originalHtmlLength: fullHtml.length
       };
     } catch (error) {
       logger.error({ error }, "获取页面HTML过程中发生错误");
