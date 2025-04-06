@@ -14,6 +14,7 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
   - Automatic saving and restoration of browser state to reduce verification frequency
   - Smart headless/headed mode switching, automatically switching to headed mode when verification is needed
   - Randomization of device and locale settings to reduce detection risk
+- **Raw HTML Retrieval**: Ability to fetch the raw HTML of search result pages for analysis and debugging when Google's page structure changes
 - **MCP Server Integration**: Provides real-time search capabilities to AI assistants like Claude without requiring additional API keys
 - **Completely Open Source and Free**: All code is open source with no usage restrictions, freely customizable and extensible
 
@@ -24,6 +25,7 @@ A Playwright-based Node.js tool that bypasses search engine anti-scraping mechan
 - Command-line parameter support for search keywords
 - MCP server support for AI assistant integration
 - Returns search results with title, link, and snippet
+- Option to retrieve raw HTML of search result pages for analysis
 - JSON format output
 - Support for both headless and headed modes (for debugging)
 - Detailed logging output
@@ -86,6 +88,15 @@ pnpm dev "search keywords"
 
 # Run in debug mode (showing browser interface)
 pnpm debug "search keywords"
+
+# Get raw HTML of search result page
+google-search "search keywords" --get-html
+
+# Get HTML and save to file
+google-search "search keywords" --get-html --save-html
+
+# Get HTML and save to specific file
+google-search "search keywords" --get-html --save-html --html-output "./output.html"
 ```
 
 #### Command Line Options
@@ -96,6 +107,9 @@ pnpm debug "search keywords"
 - `--remote-debugging-port <number>`: Enable remote debugging port (default: 9222)
 - `--state-file <path>`: Browser state file path (default: ./browser-state.json)
 - `--no-save-state`: Don't save browser state
+- `--get-html`: Retrieve raw HTML of search result page instead of parsing results
+- `--save-html`: Save HTML to file (used with --get-html)
+- `--html-output <path>`: Specify HTML output file path (used with --get-html and --save-html)
 - `-V, --version`: Display version number
 - `-h, --help`: Display help information
 
@@ -122,6 +136,31 @@ pnpm debug "search keywords"
     }
     // More results...
   ]
+}
+```
+
+#### HTML Output Example
+
+When using the `--get-html` option, the output will include information about the HTML content:
+
+```json
+{
+  "query": "playwright automation",
+  "url": "https://www.google.com/",
+  "htmlLength": 1291733,
+  "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta content=\"dark light\" name=\"color-scheme\"><meta content=\"origin\" name=\"referrer\">..."
+}
+```
+
+If you also use the `--save-html` option, the output will include the path where the HTML was saved:
+
+```json
+{
+  "query": "playwright automation",
+  "url": "https://www.google.com/",
+  "htmlLength": 1292241,
+  "savedPath": "./google-search-html/playwright_automation-2025-04-06T03-30-06-852Z.html",
+  "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\">..."
 }
 ```
 

@@ -26,3 +26,13 @@ export interface CommandOptions {
   noSaveState?: boolean;
   locale?: string; // 搜索结果语言，默认为中文(zh-CN)
 }
+
+/**
+ * HTML响应接口 - 用于获取原始搜索页面HTML
+ */
+export interface HtmlResponse {
+  query: string;    // 搜索查询
+  html: string;     // 页面HTML内容
+  url: string;      // 搜索结果页面URL
+  savedPath?: string; // 可选，如果HTML保存到文件，则为保存路径
+}

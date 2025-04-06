@@ -12,6 +12,7 @@
   - 自动保存和恢复浏览器状态，减少验证频率
   - 无头/有头模式智能切换，遇到验证时自动转为有头模式让用户完成验证
   - 多种设备和区域设置随机化，降低被检测风险
+- **原始HTML获取**：能够获取搜索结果页面的原始HTML，用于分析和调试Google页面结构变化时的提取策略
 - **MCP 服务器集成**：为 Claude 等 AI 助手提供实时搜索能力，无需额外 API 密钥
 - **完全开源免费**：所有代码开源，无使用限制，可自由定制和扩展
 
@@ -22,6 +23,7 @@
 - 支持命令行参数输入搜索关键词
 - 支持作为 MCP 服务器，为 Claude 等 AI 助手提供搜索能力
 - 返回搜索结果的标题、链接和摘要
+- 支持获取搜索结果页面的原始HTML用于分析
 - 以 JSON 格式输出结果
 - 支持无头模式和有头模式（调试用）
 - 提供详细的日志输出
@@ -85,6 +87,15 @@ pnpm dev "搜索关键词"
 
 # 调试模式运行（显示浏览器界面）
 pnpm debug "搜索关键词"
+
+# 获取搜索结果页面的原始HTML
+google-search "搜索关键词" --get-html
+
+# 获取HTML并保存到文件
+google-search "搜索关键词" --get-html --save-html
+
+# 获取HTML并保存到指定文件
+google-search "搜索关键词" --get-html --save-html --html-output "./输出.html"
 ```
 
 #### 命令行选项
@@ -95,6 +106,9 @@ pnpm debug "搜索关键词"
 - `--remote-debugging-port <number>`: 启用远程调试端口（默认：9222）
 - `--state-file <path>`: 浏览器状态文件路径（默认：./browser-state.json）
 - `--no-save-state`: 不保存浏览器状态
+- `--get-html`: 获取搜索结果页面的原始HTML而不是解析结果
+- `--save-html`: 将HTML保存到文件（与--get-html一起使用）
+- `--html-output <path>`: 指定HTML输出文件路径（与--get-html和--save-html一起使用）
 - `-V, --version`: 显示版本号
 - `-h, --help`: 显示帮助信息
 
@@ -121,6 +135,31 @@ pnpm debug "搜索关键词"
     }
     // 更多结果...
   ]
+}
+```
+
+#### HTML输出示例
+
+使用`--get-html`选项时，输出将包含HTML内容的相关信息：
+
+```json
+{
+  "query": "playwright automation",
+  "url": "https://www.google.com/",
+  "htmlLength": 1291733,
+  "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta content=\"dark light\" name=\"color-scheme\"><meta content=\"origin\" name=\"referrer\">..."
+}
+```
+
+如果同时使用`--save-html`选项，输出中还将包含HTML保存的文件路径：
+
+```json
+{
+  "query": "playwright automation",
+  "url": "https://www.google.com/",
+  "htmlLength": 1292241,
+  "savedPath": "./google-search-html/playwright_automation-2025-04-06T03-30-06-852Z.html",
+  "htmlPreview": "<!DOCTYPE html><html itemscope=\"\" itemtype=\"http://schema.org/SearchResultsPage\" lang=\"zh-CN\">..."
 }
 ```
 

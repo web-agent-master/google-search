@@ -33,3 +33,5 @@ pnpm-debug.log*
 browser-state.json
 browser-state-fingerprint.json
 src/mcp-server.ts
+.iter_plan.md
+.iter_process.md
