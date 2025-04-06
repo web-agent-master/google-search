@@ -787,123 +787,140 @@ export async function googleSearch(
 
       logger.info("正在提取搜索结果...");
 
-      // 提取搜索结果 - 尝试多种选择器组合
-      const resultSelectors = [
-        { container: "#search .g", title: "h3", snippet: ".VwiC3b" },
-        { container: "#rso .g", title: "h3", snippet: ".VwiC3b" },
-        { container: ".g", title: "h3", snippet: ".VwiC3b" },
-        {
-          container: "[data-sokoban-container] > div",
-          title: "h3",
-          snippet: "[data-sncf='1']",
-        },
-        {
-          container: "div[role='main'] .g",
-          title: "h3",
-          snippet: "[data-sncf='1']",
-        },
-      ];
+      let results: SearchResult[] = []; // 在 evaluate 调用之前声明 results
 
-      let results: SearchResult[] = [];
+      // 提取搜索结果 - 使用移植自 google-search-extractor.cjs 的逻辑
+      results = await page.evaluate((maxResults: number): SearchResult[] => { // 添加返回类型
+        const results: { title: string; link: string; snippet: string }[] = [];
+        const seenUrls = new Set<string>(); // 用于去重
 
-      for (const selector of resultSelectors) {
-        try {
-          results = await page.$$eval(
-            selector.container,
-            (
-              elements: Element[],
-              params: {
-                maxResults: number;
-                titleSelector: string;
-                snippetSelector: string;
+        // 定义多组选择器，按优先级排序 (参考 google-search-extractor.cjs)
+        const selectorSets = [
+          { container: '#search div[data-hveid]', title: 'h3', snippet: '.VwiC3b' },
+          { container: '#rso div[data-hveid]', title: 'h3', snippet: '[data-sncf="1"]' },
+          { container: '.g', title: 'h3', snippet: 'div[style*="webkit-line-clamp"]' },
+          { container: 'div[jscontroller][data-hveid]', title: 'h3', snippet: 'div[role="text"]' }
+        ];
+
+        // 备用摘要选择器
+        const alternativeSnippetSelectors = [
+          '.VwiC3b',
+          '[data-sncf="1"]',
+          'div[style*="webkit-line-clamp"]',
+          'div[role="text"]'
+        ];
+
+        // 尝试每组选择器
+        for (const selectors of selectorSets) {
+          if (results.length >= maxResults) break; // 如果已达到数量限制，停止
+
+          const containers = document.querySelectorAll(selectors.container);
+
+          for (const container of containers) {
+            if (results.length >= maxResults) break;
+
+            const titleElement = container.querySelector(selectors.title);
+            if (!titleElement) continue;
+
+            const title = (titleElement.textContent || "").trim();
+
+            // 查找链接
+            let link = '';
+            const linkInTitle = titleElement.querySelector('a');
+            if (linkInTitle) {
+              link = linkInTitle.href;
+            } else {
+              let current: Element | null = titleElement;
+              while (current && current.tagName !== 'A') {
+                current = current.parentElement;
               }
-            ) => {
-              return elements
-                .slice(0, params.maxResults)
-                .map((el: Element) => {
-                  const titleElement = el.querySelector(params.titleSelector);
-                  const linkElement = el.querySelector("a");
-                  const snippetElement = el.querySelector(
-                    params.snippetSelector
-                  );
-
-                  return {
-                    title: titleElement ? titleElement.textContent || "" : "",
-                    link:
-                      linkElement && linkElement instanceof HTMLAnchorElement
-                        ? linkElement.href
-                        : "",
-                    snippet: snippetElement
-                      ? snippetElement.textContent || ""
-                      : "",
-                  };
-                })
-                .filter(
-                  (item: { title: string; link: string; snippet: string }) =>
-                    item.title && item.link
-                ); // 过滤掉空结果
-            },
-            {
-              maxResults: limit,
-              titleSelector: selector.title,
-              snippetSelector: selector.snippet,
+              if (current && current instanceof HTMLAnchorElement) {
+                link = current.href;
+              } else {
+                const containerLink = container.querySelector('a');
+                if (containerLink) {
+                  link = containerLink.href;
+                }
+              }
             }
-          );
 
-          if (results.length > 0) {
-            logger.info({ selector: selector.container }, "成功提取到结果");
-            break;
-          }
-        } catch (e) {
-          // 继续尝试下一个选择器组合
-        }
-      }
+            // 过滤无效或重复链接
+            if (!link || !link.startsWith('http') || seenUrls.has(link)) continue;
 
-      // 如果所有选择器都失败，尝试一个更通用的方法
-      if (results.length === 0) {
-        logger.info("使用备用方法提取搜索结果...");
-        results = await page.$$eval(
-          "a[href^='http']",
-          (elements: Element[], maxResults: number) => {
-            return elements
-              .filter((el: Element) => {
-                // 过滤掉导航链接、图片链接等
-                const href = el.getAttribute("href") || "";
-                return (
-                  href.startsWith("http") &&
-                  !href.includes("google.com/") &&
-                  !href.includes("accounts.google") &&
-                  !href.includes("support.google")
+            // 查找摘要
+            let snippet = '';
+            const snippetElement = container.querySelector(selectors.snippet);
+            if (snippetElement) {
+              snippet = (snippetElement.textContent || "").trim();
+            } else {
+              // 尝试其他摘要选择器
+              for (const altSelector of alternativeSnippetSelectors) {
+                const element = container.querySelector(altSelector);
+                if (element) {
+                  snippet = (element.textContent || "").trim();
+                  break;
+                }
+              }
+
+              // 如果仍然没有找到摘要，尝试通用方法
+              if (!snippet) {
+                const textNodes = Array.from(container.querySelectorAll('div')).filter(el =>
+                  !el.querySelector('h3') &&
+                  (el.textContent || "").trim().length > 20
                 );
-              })
-              .slice(0, maxResults)
-              .map((el: Element) => {
-                const title = el.textContent || "";
-                const link =
-                  el instanceof HTMLAnchorElement
-                    ? el.href
-                    : el.getAttribute("href") || "";
+                if (textNodes.length > 0) {
+                  snippet = (textNodes[0].textContent || "").trim();
+                }
+              }
+            }
+
+            // 只添加有标题和链接的结果
+            if (title && link) {
+              results.push({ title, link, snippet });
+              seenUrls.add(link); // 记录已处理的URL
+            }
+          }
+        }
+        
+        // 如果主要选择器未找到足够结果，尝试更通用的方法 (作为补充)
+        if (results.length < maxResults) {
+            const anchorElements = Array.from(document.querySelectorAll("a[href^='http']"));
+            for (const el of anchorElements) {
+                if (results.length >= maxResults) break;
+
+                // 检查 el 是否为 HTMLAnchorElement
+                if (!(el instanceof HTMLAnchorElement)) {
+                    continue;
+                }
+                const link = el.href;
+                // 过滤掉导航链接、图片链接、已存在链接等
+                if (!link || seenUrls.has(link) || link.includes("google.com/") || link.includes("accounts.google") || link.includes("support.google")) {
+                    continue;
+                }
+
+                const title = (el.textContent || "").trim();
+                if (!title) continue; // 跳过没有文本内容的链接
+
                 // 尝试获取周围的文本作为摘要
                 let snippet = "";
                 let parent = el.parentElement;
                 for (let i = 0; i < 3 && parent; i++) {
-                  const text = parent.textContent || "";
-                  if (text.length > snippet.length && text !== title) {
+                  const text = (parent.textContent || "").trim();
+                  // 确保摘要文本与标题不同且有一定长度
+                  if (text.length > 20 && text !== title) {
                     snippet = text;
+                    break; // 找到合适的摘要就停止向上查找
                   }
                   parent = parent.parentElement;
                 }
 
-                return { title, link, snippet };
-              })
-              .filter(
-                (item: { title: string; link: string; snippet: string }) =>
-                  item.title && item.link
-              ); // 过滤掉空结果
-          },
-          limit
-        );
-      }
+                results.push({ title, link, snippet });
+                seenUrls.add(link);
+            }
+        }
+
+        return results.slice(0, maxResults); // 确保不超过限制
+      }, limit); // 将 limit 传递给 evaluate 函数
 
       logger.info({ count: results.length }, "成功获取到搜索结果");
 
@@ -951,7 +968,7 @@ export async function googleSearch(
       // 返回搜索结果
       return {
         query,
-        results,
+        results, // 现在 results 在这个作用域内是可访问的
       };
     } catch (error) {
       logger.error({ error }, "搜索过程中发生错误");
@@ -990,20 +1007,22 @@ export async function googleSearch(
         logger.info("保持浏览器实例打开状态");
       }
 
-      // 创建一个模拟的搜索结果，以便在出错时仍能返回一些信息
-      return {
-        query,
-        results: [
-          {
-            title: "搜索失败",
-            link: "",
-            snippet: `无法完成搜索，错误信息: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-          },
-        ],
-      };
+      // 返回错误信息或空结果
+      // logger.error 已经记录了错误，这里返回一个包含错误信息的模拟结果
+       return {
+         query,
+         results: [
+           {
+             title: "搜索失败",
+             link: "",
+             snippet: `无法完成搜索，错误信息: ${
+               error instanceof Error ? error.message : String(error)
+             }`,
+           },
+         ],
+       };
     }
+    // 移除 finally 块，因为资源清理已经在 try 和 catch 块中处理
   }
 
   // 首先尝试以无头模式执行搜索
